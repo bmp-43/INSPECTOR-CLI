@@ -1,58 +1,52 @@
-INQUISITOR 🔍
+# INQUISITOR
 
-Inquisitor is a fast, multithreaded cybersecurity toolset in the making — built with speed, precision, and extensibility in mind.
+INQUISITOR is a powerful, multi-threaded port scanning tool designed for speed, clarity, and future modular expansion. Currently, it includes a high-performance port scanner with configuration file support.
 
-At the moment, Inquisitor ships with a fully functional Port Scanner, with more tools on the way. The goal is to eventually rival professional-grade utilities like Nmap — but with a clean interface, open design, and community-driven growth.
-✅ Features
+## Features
 
-    ⚡ Fast multithreaded port scanning
+- 🔍 Scan ports quickly with multithreading  
+- 🧠 Validates hostnames and IP addresses  
+- ⚙️ Reads config from `config_inquisitor.txt` (port range, timeout, threads)  
+- 📄 Clean and modular codebase ready to grow  
 
-    🌐 Supports both IP addresses and domain names
+## Current Toolset
 
-    🧠 Configurable timeout, port ranges, and thread count
+- **Port Scanner**  
+  A fast and customizable port scanner with thread control and timeout settings. Useful for recon, auditing, and testing open ports on any target.
 
-    📁 External configuration through config_inquisitor.txt
+## How to Use
 
-📦 Current Tools
-1. Port Scanner
+1. Clone the repo  
+2. Make sure `config_inquisitor.txt` exists and has values like:
+    ```
+    timeout=0.7  
+    max_threads=100  
+    start_port=1  
+    end_port=100
+    ```
+3. Run:
+    ```bash
+    python scanner.py
+    ```
 
-Scans a target for open TCP ports in a given range and prints results in real-time.
-Configuration
+## Planned Tools
 
-All settings are managed through the config_inquisitor.txt file:
+- Banner grabber  
+- Hash identifier  
+- Directory brute-forcer  
+- IP geolocator  
+- WHOIS lookup  
+- Reverse DNS  
+- Future: Exploit suggestions based on open ports
 
-timeout=0.7  
-max_threads=100  
-start_port=1  
-end_port=100  
+## License
 
-Usage
+This project is licensed under the **GNU General Public License v3.0**.  
+This means:
+- You’re free to use, study, share, and modify the code  
+- **You must also share your changes under the same license**  
+- No one can legally steal or privatize your code  
+- Commercial use is allowed only if they also keep it open-source  
 
-python3 scanner.py
+Read more: https://www.gnu.org/licenses/gpl-3.0.en.html
 
-You'll be prompted to enter a target (IP or hostname). Open ports will be printed as they're found.
-🚀 What's Next?
-
-    🔒 Hash Identifier
-
-    🌍 Subdomain Finder
-
-    🧠 Common Exploits Reference (auto-matched to open ports)
-
-    🎯 Vulnerability Checker
-
-    💻 CLI / GUI(maybe) dashboard
-
-🧠 Version
-
-Current Version: 0.1.0
-This is the first stable alpha with only the port scanner implemented.
-📜 License
-
-MIT License — free to use, free to hack on, free to improve.
-🤝 Contribute
-
-Want to help improve Inquisitor? PRs and issues are welcome. More docs and modular design coming soon.
-⚔️ About
-
-Inquisitor is written by a young developer passionate about cybersecurity and power tools. This is just the beginning.
