@@ -24,6 +24,28 @@ config_path = os.path.join(base_dir, "config", "config_inquisitor.txt")
 settings = config(config_path)
 
 
+def port_info(port):
+    port = str(port)
+    info_lines = []
+    found = False
+    with open("full_port_list.txt", "r") as file:
+        for line in file:
+            if line.startswith(f"Port: {port}"):
+                found = True
+                info_lines.append(line.strip())
+                continue
+            if found:
+                if line.startswith("Port: "):  # Next port block starts
+                    break
+                if line.strip() == "":
+                    continue  # Skip blank lines within a block
+                info_lines.append(line.strip())
+    return "\n".join(info_lines) if info_lines else None
+    
+
+
+
+
 class PortScanner:
     def __init__(self, target=None, max_threads=int(settings.get("max_threads", 100))):
         self.target = target
@@ -40,6 +62,10 @@ class PortScanner:
         result = s.connect_ex((self.target, port))
         if result == 0:
             print(f"Port {port} is open")
+            info = port_info(port)
+            if info:
+                print(info)
+            print()
         s.close()
 
     def scan_port(self):
@@ -70,5 +96,7 @@ try:
 
 except KeyboardInterrupt:
     print("SHUTTING DOWN")
+
+ 
 
  
