@@ -1,4 +1,18 @@
-timeout=0.5
+#Its hightly recommended to think twice before editing this file, wrong configurations will result
+#to problems with hardware properly running the program.
+
+#Scanner configuration
+timeout_scanner=0.5
 max_threads=1000
 start_port=1
 end_port=65535
+
+#Enumerator configuration
+semaphore=10
+timeout_enumerator=3
+#Be carefull with batch size!
+batch_size=1000 
+#Available subdomain lists are top_500.txt, top_5000.txt, top_20000.txt, top_110000.txt
+#You can easily add your own lists depending on your goals
+#Note: Dont forget to append "subdomains/" at the beginning for proper path handling
+subdomain_wordlist=subdomains/top_20000.txt
