@@ -2,7 +2,7 @@
 
 INQUISITOR is a modular cybersecurity toolkit aimed at making common security assessment tasks easier to perform and extend. It currently features a multi-threaded port scanner and a subdomain enumerator.
 
-## What's New in 0.2.0 ALPHA
+## What's New in 0.2.0 BETA
 
 - Added a subdomain enumerator tool for fast and efficient subdomain discovery.
 - Major folder structure rework for better modularity and clarity.
