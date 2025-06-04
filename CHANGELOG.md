@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.1 BETA] - 2025-06-04
+### Added
+- Basic banner grabber integrated into the port scanner.
+
+### Changed
+- Port scanner now features syntax highlighting for cleaner logs.
+
+### Fixed
+- Minor fixes in the subdomain enumerator.
+
 ## [0.2.0 BETA] - 2025-06-02
 ### Added
 - Subdomain enumerator tool for fast and efficient subdomain discovery.
@@ -12,7 +22,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Port scanner received several bug fixes for improved reliability.
 
-## [0.1.5 BETA] - 2025-05-27
+## [0.1.1 BETA] - 2025-05-27
 ### Changed
 - Port scanner updated for faster scanning.
 - Added display of brief explanations for each port and its possible vulnerabilities.
