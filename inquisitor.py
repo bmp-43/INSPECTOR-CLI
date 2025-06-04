@@ -5,7 +5,7 @@ from colorama import Fore, Style
 print(f"{Fore.BLUE}-" * 50)
 ascii_banner = pyfiglet.figlet_format(f"INQUISITOR")
 print(ascii_banner)
-print("Version 0.2.0 BETA")
+print("Version 0.2.1 BETA")
 print("-" * 50)
 
 scanner_instance = scanner.PortScanner()
