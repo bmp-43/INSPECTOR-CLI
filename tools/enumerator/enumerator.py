@@ -41,10 +41,7 @@ def silence_ssl_error(loop, context):
 
 limit = asyncio.Semaphore(float(settings.get("semaphore", 10))) 
 
-print("-" * 50)
-print(f"{Fore.CYAN}[i]{Style.RESET_ALL} Using subdomain wordlist from config: {settings.get('subdomain_wordlist')}")
-print(f"{Fore.LIGHTBLACK_EX}Edit 'config_inquisitor.txt' to change the wordlist path.{Style.RESET_ALL}")
-print("-" * 50)
+
 
 
 
@@ -211,6 +208,10 @@ def tool():
         print("Pick your mode\n 1. Subdomain enumerator\n 2. Path enumerator ")
         mode = input()
         if mode == "1" or mode.lower() == "subdomain enumerator":
+            print("-" * 50)
+            print(f"{Fore.CYAN}[i]{Style.RESET_ALL} Using subdomain wordlist from config: {settings.get('subdomain_wordlist')}")
+            print(f"{Fore.LIGHTBLACK_EX}Edit 'config_inquisitor.txt' to change the wordlist path.{Style.RESET_ALL}")
+            print("-" * 50)
             try:
                 global domain
                 domain = input("Enter the root domain (e.g google.com): ").strip().lower()
