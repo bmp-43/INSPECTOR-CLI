@@ -3,9 +3,9 @@ import socket
 import re
 import os
 import concurrent.futures
+from colorama import Fore, Style
 
 
-print("-" * 50)
 
 
 def config(filename):
@@ -21,7 +21,7 @@ base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 config_path = os.path.join(base_dir, "config", "config_inquisitor.txt")
 
 if not os.path.isfile(config_path):
-    print(f"Config file not found at: {config_path}")
+    print(f"{Fore.RED}Config file not found at: {config_path}{Style.RESET_ALL}")
     sys.exit(1)
 settings = config(config_path)
 portlist_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "full_port_list.txt")
@@ -69,12 +69,24 @@ class PortScanner:
         s.settimeout(float(settings.get("timeout_scanner", 0.5)))
         result = s.connect_ex((self.target, port))
         if result == 0:
-            print(f"Port {port} is open")
+            print(f"{Fore.GREEN}Port {port} is open{Style.RESET_ALL}")
+            try:
+                s.sendall(b"HEAD / HTTP/1.0\r\n\r\n")
+                banner = s.recv(1024).decode(errors="ignore").strip()
+                if banner:
+                    print(f"{Fore.MAGENTA}[Banner] {banner}{Style.RESET_ALL}")
+            except Exception:
+                print(f"{Fore.RED}[Banner] No response or unreadable.{Style.RESET_ALL}")
             info = port_info(port)
             if info:
-                print(info)
+                print(f"{Fore.CYAN}{info}{Style.RESET_ALL}")
             print()
+
+        
+
         s.close()
+
+
 
     def scan_port(self):
         while True:
@@ -100,9 +112,9 @@ scan = PortScanner()
 
 try:
     if __name__ == "__main__":
+        print(f"{Fore.BLUE}-" * 50)
+        print(f"{Style.RESET_ALL}")
         scan.scan_port()
-
+        
 except KeyboardInterrupt:
     print("SHUTTING DOWN")
-
- 
