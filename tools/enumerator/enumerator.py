@@ -4,6 +4,7 @@ import aiohttp
 from colorama import Fore, Style
 import os
 import sys
+import requests
 #Openning Configuration file
 
 def config(filename):
@@ -94,47 +95,49 @@ class Subdomain_enumerator:
     async def fetch(self, url, session):
 
 
-            try:
-                async with session.get(url, timeout=float(settings.get("timeout_enumerator", 5))) as resp:
-                    status = resp.status
+        try:
+            async with session.get(url, timeout=float(settings.get("timeout_enumerator", 5))) as resp:
+                status = resp.status
 
-                    if status == 200:
-                        print(f"{Fore.GREEN}[200] ACTIVE — Subdomain responded successfully: {url}{Style.RESET_ALL}")
-                        self.success.append(url)
-                    elif status == 301 or status == 302:
-                        print(f"{Fore.CYAN}[{status}] REDIRECT — Subdomain is alive but redirects: {url}{Style.RESET_ALL}")
-                        self.redirect.append(url)
-                    elif status == 401:
-                        print(f"{Fore.YELLOW}[401] AUTH REQUIRED — Subdomain is protected by login: {url}{Style.RESET_ALL}")
-                        self.blocked.append(url)
-                    elif status == 403:
-                        print(f"{Fore.YELLOW}[403] FORBIDDEN — Access to subdomain is blocked: {url}{Style.RESET_ALL}")
-                        self.blocked.append(url)
-                    elif status == 405:
-                        print(f"{Fore.MAGENTA}[405] METHOD BLOCKED — Subdomain rejects GET requests, somethings there!: {url}{Style.RESET_ALL}")
-                        self.interesting.append(url)
-                    elif status == 404:
-                        self.not_found += 1
-                    else:
-                        print(f"{Fore.MAGENTA}[{status}] UNKNOWN — Unexpected response from subdomain: {url}{Style.RESET_ALL}")
-                        self.interesting.append(url)
-                    
-            except aiohttp.ClientConnectorError:
-                self.dns_failures += 1
-            except asyncio.TimeoutError:
-                self.dns_failures += 1
-            except Exception as e:
-                print(f"{Fore.MAGENTA}[ERROR] {url} — {e}{Style.RESET_ALL}")
-                self.dns_failures += 1
-            except TimeoutError:
-                print(f"{Fore.CYAN}Did you mess with config file?{Style.RESET_ALL}")
+                if status == 200:
+                    print(f"{Fore.GREEN}[200] ACTIVE — Subdomain responded successfully: {url}{Style.RESET_ALL}")
+                    self.success.append(url)
+                elif status == 301 or status == 302:
+                    print(f"{Fore.CYAN}[{status}] REDIRECT — Subdomain is alive but redirects: {url}{Style.RESET_ALL}")
+                    self.redirect.append(url)
+                elif status == 401:
+                    print(f"{Fore.YELLOW}[401] AUTH REQUIRED — Subdomain is protected by login: {url}{Style.RESET_ALL}")
+                    self.blocked.append(url)
+                elif status == 403:
+                    print(f"{Fore.YELLOW}[403] FORBIDDEN — Access to subdomain is blocked: {url}{Style.RESET_ALL}")
+                    self.blocked.append(url)
+                elif status == 405:
+                    print(f"{Fore.MAGENTA}[405] METHOD BLOCKED — Subdomain rejects GET requests, somethings there!: {url}{Style.RESET_ALL}")
+                    self.interesting.append(url)
+                elif status == 404:
+                    self.not_found += 1
+                else:
+                    print(f"{Fore.MAGENTA}[{status}] UNKNOWN — Unexpected response from subdomain: {url}{Style.RESET_ALL}")
+                    self.interesting.append(url)
+                
+        except aiohttp.ClientConnectorError:
+            self.dns_failures += 1
+        except asyncio.TimeoutError:
+            self.dns_failures += 1
+        except Exception as e:
+            print(f"{Fore.MAGENTA}[ERROR] {url} — {e}{Style.RESET_ALL}")
+            self.dns_failures += 1
+        except TimeoutError:
+            print(f"{Fore.RED}Did you mess with config file?{Style.RESET_ALL}")
+        except ConnectionResetError:
+            print(f"{Fore.RED}Connection reset by peer{Style.RESET_ALL}")
 
 
 
     
 
     async def main(self):
-        wordlist_path = settings.get('subdomain_wordlist')
+        wordlist_path = "subdomains/" + str(settings.get('subdomain_wordlist'))
         if not wordlist_path:
             print(f"{Fore.RED}No wordlist path set in config!{Style.RESET_ALL}")
             return
@@ -181,7 +184,8 @@ class Path_enumerator:
                 redirect = [],
                 blocked = [],
                 interesting = [],
-                not_found = 0):
+                not_found = 0,
+                dns_failures = 0):
             
         self.url = url
         self.success = success
@@ -189,6 +193,101 @@ class Path_enumerator:
         self.blocked = blocked
         self.interesting = interesting
         self.not_found = not_found
+        self.dns_failures = dns_failures
+
+
+
+#Fetching paths
+
+    async def fetch(self, url, session):
+        fake_path = "/theresnochancethispathexists321123"
+
+
+        try:
+            async with session.get(url + fake_path, timeout=float(settings.get("timeout_enumerator", 5))) as baseline_resp:
+                baseline_html = await baseline_resp.text()
+            
+            # Now get the real one
+            async with session.get(url, timeout=float(settings.get("timeout_enumerator", 5))) as resp:
+                status = resp.status
+                
+
+                if status == 200:
+                    if any(keyword in baseline_html.lower() for keyword in ["404", "not found", "does not exist"]):
+                        self.not_found += 1
+                    else:
+                        print(f"{Fore.GREEN}[200] ACTIVE — Path responded successfully: {url}{Style.RESET_ALL}")
+                        self.success.append(url)
+                elif status == 301 or status == 302:
+                    print(f"{Fore.CYAN}[{status}] REDIRECT — Path is alive but redirects: {url}{Style.RESET_ALL}")
+                    self.redirect.append(url)
+                elif status == 401:
+                    print(f"{Fore.YELLOW}[401] AUTH REQUIRED — Path is protected by login: {url}{Style.RESET_ALL}")
+                    self.blocked.append(url)
+                elif status == 403:
+                    print(f"{Fore.YELLOW}[403] FORBIDDEN — Access to path is blocked: {url}{Style.RESET_ALL}")
+                    self.blocked.append(url)
+                elif status == 405:
+                    print(f"{Fore.MAGENTA}[405] METHOD BLOCKED — Path rejects GET requests, somethings there!: {url}{Style.RESET_ALL}")
+                    self.interesting.append(url)
+                elif status == 404:
+                    self.not_found += 1
+                else:
+                    print(f"{Fore.MAGENTA}[{status}] UNKNOWN — Unexpected response from chosen path: {url}{Style.RESET_ALL}")
+                    self.interesting.append(url)
+                
+        except aiohttp.ClientConnectorError:
+            self.dns_failures += 1
+        except asyncio.TimeoutError:
+            self.dns_failures += 1
+        except Exception as e:
+            print(f"{Fore.MAGENTA}[ERROR] {url} — {e}{Style.RESET_ALL}")
+            self.dns_failures += 1
+        except TimeoutError:
+            print(f"{Fore.RED}Did you mess with config file?{Style.RESET_ALL}")
+        except ConnectionResetError:
+            print(f"{Fore.RED}Connection reset by peer{Style.RESET_ALL}")
+
+
+    async def main(self):
+        wordlist_path = "paths/" + str(settings.get('paths_wordlist'))
+        if not wordlist_path:
+            print(f"{Fore.RED}No wordlist path set in config!{Style.RESET_ALL}")
+            return
+        if not os.path.isabs(wordlist_path):
+            wordlist_path = os.path.join(enumerator_dir, wordlist_path)
+        if not os.path.isfile(wordlist_path):
+            print(f"{Fore.RED}Wordlist file not found: {wordlist_path}{Style.RESET_ALL}")
+            return
+
+        connector = aiohttp.TCPConnector(limit=100, force_close=True)
+        
+        async with aiohttp.ClientSession(connector=connector) as session:
+            try:    
+                batch = []
+                batch_size = int(settings.get("batch", 1000))  # Tune this as needed
+                with open(wordlist_path, "r") as f:
+                    for line in f:
+                        path = line.strip()
+                        if not path:
+                            continue
+                        url = f"https://{self.url}/{path}"
+                        batch.append(self.fetch(url, session))
+                        if len(batch) >= batch_size:
+                            await asyncio.gather(*batch)
+                            batch = []
+                    if batch:
+                        await asyncio.gather(*batch)
+
+                print("\n--- SUMMARY ---")
+                print(f"{Fore.GREEN}{len(self.success)} Active paths found{Style.RESET_ALL}")
+                print(f"{Fore.CYAN}{len(self.redirect)} Redirects{Style.RESET_ALL}")
+                print(f"{Fore.YELLOW}{len(self.blocked)} Blocked (401/403){Style.RESET_ALL}")
+                print(f"{Fore.MAGENTA}{len(self.interesting)} Interesting (405/other){Style.RESET_ALL}")
+                print(f"{Fore.RED}{self.not_found} Not found (404){Style.RESET_ALL}")
+                print(f"{Fore.LIGHTBLACK_EX}{self.dns_failures} DNS/Timeout failures{Style.RESET_ALL}")
+            except Exception as e:
+                print(f"{Fore.RED}[ERROR]: Unknown error has occured{Style.RESET_ALL}")
 
 
 def run_with_handler(coro):
@@ -205,15 +304,15 @@ def run_with_handler(coro):
 def tool():
     try:
 
-        print("Pick your mode\n 1. Subdomain enumerator\n 2. Path enumerator ")
+        print("Pick your mode\n 1. Subdomain enumerator\n 2. Path enumerator(Directory Brute-Forcer) ")
         mode = input()
+        global domain
         if mode == "1" or mode.lower() == "subdomain enumerator":
             print("-" * 50)
             print(f"{Fore.CYAN}[i]{Style.RESET_ALL} Using subdomain wordlist from config: {settings.get('subdomain_wordlist')}")
             print(f"{Fore.LIGHTBLACK_EX}Edit 'config_inquisitor.txt' to change the wordlist path.{Style.RESET_ALL}")
             print("-" * 50)
             try:
-                global domain
                 domain = input("Enter the root domain (e.g google.com): ").strip().lower()
                 if domain.startswith("http://"):
                     domain = domain[7:]
@@ -225,9 +324,20 @@ def tool():
             except KeyboardInterrupt:
                 print("\nShutting down")
         elif mode == "2" or mode.lower() == "path enumerator":
+            
+            print("-" * 50)
+            print(f"{Fore.CYAN}[i]{Style.RESET_ALL} Using path wordlist from config: {settings.get('paths_wordlist')}")
+            print(f"{Fore.LIGHTBLACK_EX}Edit 'config_inquisitor.txt' to change the wordlist path.{Style.RESET_ALL}")
+            print("-" * 50)
             try:
-                print(f"{Fore.BLUE}The path enumeration tool will come soon stay checked for the updates!{Style.RESET_ALL}")
-                return tool()
+                domain = input("Enter the root domain (e.g google.com): ").strip().lower()
+                if domain.startswith("http://"):
+                    domain = domain[7:]
+                elif domain.startswith("https://"):
+                    domain = domain[8:]
+                path_enumerator_instance = Path_enumerator(url=domain)  
+
+                run_with_handler(path_enumerator_instance.main())   
         
             except KeyboardInterrupt:
                 print("\nShutting down")
