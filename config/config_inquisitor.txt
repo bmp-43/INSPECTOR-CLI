@@ -12,7 +12,8 @@ semaphore=10
 timeout_enumerator=3
 #Be carefull with batch size!
 batch_size=1000 
-#Available subdomain lists are top_500.txt, top_5000.txt, top_20000.txt, top_110000.txt
+#Available subdomain lists are top_500.txt, top_5000.txt, top_20000.txt, top_110000.txt Thanks SecLists
 #You can easily add your own lists depending on your goals
-#Note: Dont forget to append "subdomains/" at the beginning for proper path handling
-subdomain_wordlist=subdomains/top_20000.txt
+#Available path lists are common_4746.txt, small_list_87664, medium_list_220559.txt, big_list_1273832.txt  Thanks SecLists
+subdomain_wordlist=top_20000.txt
+paths_wordlist=small_list_87664.txt
