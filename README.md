@@ -1,12 +1,13 @@
 # INQUISITOR
 
-INQUISITOR is a modular cybersecurity toolkit aimed at making common security assessment tasks easier to perform and extend. It currently features a multi-threaded port scanner, a subdomain enumerator, and a basic banner grabber.
+INQUISITOR is a modular cybersecurity toolkit aimed at making common security assessment tasks easier to perform and extend. It currently features a multi-threaded port scanner, a subdomain enumerator, a basic banner grabber, and a fully functioning path enumerator (directory brute-forcer).
 
 ## Features
 
 - 🔍 Multi-threaded port scanning for speed
 - 🌐 Fast subdomain enumeration
 - 🏷️ Basic banner grabbing for open ports (integrated with the port scanner)
+- 📂 Path enumerator (directory brute-forcer)
 - 🧠 Validates hostnames and IP addresses
 - ⚙️ Reads config from `config_inquisitor.txt` (port range, timeout, threads)
 - 🛠️ Modular design for future tools
@@ -23,8 +24,11 @@ INQUISITOR is a modular cybersecurity toolkit aimed at making common security as
   - Quickly finds subdomains for a given domain
   - Useful for recon and expanding your attack surface analysis
 - **Banner Grabber**
-  - Integrated with the port scanner
+  - Currently integrated with the port scanner
   - Fetches basic service banners for open ports (planned for future improvements)
+- **Path Enumerator (Directory Brute-Forcer)**
+  - Enumerates directories/paths on web servers to find hidden or sensitive locations
+  - Fully functioning as of v0.2.2
 
 ## How to Use
 
@@ -47,10 +51,11 @@ INQUISITOR is a modular cybersecurity toolkit aimed at making common security as
     python3 inquisitor.py
     ```
 
-    - Select the tool you want to use (Port Scanner or Subdomain Enumerator).
+    - Select the tool you want to use (Port Scanner, Subdomain Enumerator, or Path Enumerator).
     - Follow the prompts for each tool.
     - For the Port Scanner, enter the IP address or domain to scan.
     - For the Subdomain Enumerator, enter the domain to enumerate.
+    - For the Path Enumerator, enter the target URL/domain to brute-force directories.
 
 ## Folder Structure
 
@@ -58,10 +63,9 @@ The project folder structure was reorganized in 0.2.0 ALPHA for better modularit
 
 ## Planned Tools
 
-- [✓] Subdomain enumeration tool
-- [✓] Banner grabber (basic version , improvements planned)
+- [✓] Banner grabber (basic version integrated, improvements planned)
+- [✓] Path enumerator (directory brute-forcer)
 - Hash identifier
-- Directory brute-forcer
 - IP geolocator
 - WHOIS lookup
 - Reverse DNS
