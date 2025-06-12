@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.3 BETA] - 2025-06-12
+### Changed
+- Banner Grabber upgraded: now attempts to grab banners from all frequently used ports.
+
+### Fixed
+- Bug fixes in the subdomain enumerator.
+
 ## [0.2.2] - 2025-06-07
 ### Added
 - Path enumerator (directory brute-forcer) tool added and fully functioning.
@@ -35,4 +42,3 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Initial release.
 - Basic multi-threaded port scanner.
-
