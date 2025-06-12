@@ -4,7 +4,6 @@ import aiohttp
 from colorama import Fore, Style
 import os
 import sys
-import requests
 #Openning Configuration file
 
 def config(filename):
@@ -304,7 +303,7 @@ def run_with_handler(coro):
 def tool():
     try:
 
-        print("Pick your mode\n 1. Subdomain enumerator\n 2. Path enumerator(Directory Brute-Forcer) ")
+        print("Pick your mode\n 1. Subdomain enumerator\n 2. Path enumerator ")
         mode = input()
         global domain
         if mode == "1" or mode.lower() == "subdomain enumerator":
