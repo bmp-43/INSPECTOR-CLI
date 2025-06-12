@@ -4,7 +4,7 @@ import re
 import os
 import concurrent.futures
 from colorama import Fore, Style
-
+import ssl
 
 
 
@@ -51,6 +51,23 @@ def port_info(port):
     return "\n".join(info_lines) if info_lines else None
     
 
+PROTOCOL_PROBES = {
+    21: (b"\r\n", False),                             # FTP
+    22: (None, False),                                # SSH
+    23: (b"\r\n", False),                             # Telnet
+    25: (b"EHLO inquisitor.local\r\n", False),        # SMTP
+    80: (b"HEAD / HTTP/1.0\r\n\r\n", False),          # HTTP
+    110: (b"\r\n", False),                            # POP3
+    143: (b"\r\n", False),                            # IMAP
+    443: (b"HEAD / HTTP/1.0\r\n\r\n", True),          # HTTPS
+    465: (b"EHLO inquisitor.local\r\n", True),        # SMTPS
+    993: (b"\r\n", True),                             # IMAPS
+    995: (b"\r\n", True),                             # POP3S
+    8443: (b"HEAD / HTTP/1.0\r\n\r\n", True),         # HTTPS-alt
+    3306: (None, False),                              # MySQL
+    3389: (None, False)                               # RDP
+}
+
 
 
 
@@ -64,28 +81,47 @@ class PortScanner:
         hostname_pattern = r"^(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\.[A-Za-z]{2,})+$"
         return bool(re.match(ipv4_pattern, user_input) or re.match(hostname_pattern, user_input))
 
+
+
     def check_port(self, port):
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(float(settings.get("timeout_scanner", 0.5)))
-        result = s.connect_ex((self.target, port))
-        if result == 0:
-            print(f"{Fore.GREEN}Port {port} is open{Style.RESET_ALL}")
-            try:
-                s.sendall(b"HEAD / HTTP/1.0\r\n\r\n")
-                banner = s.recv(1024).decode(errors="ignore").strip()
+        probe, use_ssl = PROTOCOL_PROBES.get(port, (None, False))
+        try:
+            if use_ssl:
+                context = ssl.create_default_context()
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                s.settimeout(float(settings.get("timeout_scanner", 0.5)))
+                s = context.wrap_socket(s, server_hostname=self.target)
+                result = s.connect_ex((self.target, port))
+            else:
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                s.settimeout(float(settings.get("timeout_scanner", 0.5)))
+                result = s.connect_ex((self.target, port))
+
+            if result == 0:
+                print(f"{Fore.GREEN}Port {port} is open{Style.RESET_ALL}")
+                banner = ""
+                if probe:
+                    try:
+                        s.sendall(probe)
+                        banner = s.recv(1024).decode(errors="ignore").strip()
+                    except Exception as e:
+                        print(f"{Fore.RED}[Banner on port {port}] Error receiving banner: {e}{Style.RESET_ALL}")
+                else:
+                    # For protocols that don't expect a probe, you may not get a banner at all
+                    print(f"{Fore.YELLOW}[Banner on port {port}] No probe sent; banner unlikely for this protocol.{Style.RESET_ALL}")
+
                 if banner:
-                    print(f"{Fore.MAGENTA}[Banner] {banner}{Style.RESET_ALL}")
-            except Exception:
-                print(f"{Fore.RED}[Banner] No response or unreadable.{Style.RESET_ALL}")
-            info = port_info(port)
-            if info:
-                print(f"{Fore.CYAN}{info}{Style.RESET_ALL}")
-            print()
+                    print(f"{Fore.MAGENTA}[Banner on port {port}] {banner}{Style.RESET_ALL}")
+                elif probe:
+                    print(f"{Fore.RED}[Banner on port {port}] No banner received.{Style.RESET_ALL}")
 
-        
-
-        s.close()
-
+                info = port_info(port)
+                if info:
+                    print(f"{Fore.CYAN}{info}{Style.RESET_ALL}")
+                print()
+            s.close()
+        except Exception:
+            print(f"{Fore.RED}[Banner on port {port}] Grab failed or timed out.\n{Style.RESET_ALL}")
 
 
     def scan_port(self):
@@ -118,3 +154,5 @@ try:
         
 except KeyboardInterrupt:
     print("SHUTTING DOWN")
+
+ 
