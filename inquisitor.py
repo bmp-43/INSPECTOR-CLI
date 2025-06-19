@@ -3,9 +3,9 @@ from tools.scanner import scanner
 from tools.enumerator import enumerator
 from colorama import Fore, Style
 print(f"{Fore.BLUE}-" * 50)
-ascii_banner = pyfiglet.figlet_format(f"INQUISITOR")
+ascii_banner = pyfiglet.figlet_format(f"INSPECTOR")
 print(ascii_banner)
-print("Version 0.2.3 BETA")
+print("Version 0.3.0")
 print("-" * 50)
 
 scanner_instance = scanner.PortScanner()
@@ -17,16 +17,18 @@ def weapon():
     if mode == "1" or mode.lower == "port scanner":
         try:
             scanner_instance.scan_port()
-
         except KeyboardInterrupt:
             print("Shutting down")
     elif mode == "2" or mode.lower == "enumerator":
         try:
             enumerator.tool()
-
         except KeyboardInterrupt:
             print("Shutting down")        
 try:
-    weapon()
+    while True:
+        weapon()
 except KeyboardInterrupt:
     print("Shutting Down...")
+
+
+
