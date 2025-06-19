@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.0] - 2025-06-19
+### Changed
+- Project renamed from "INQUISITOR" to **Inspector**.
+- All references and documentation updated to reflect the new project name.
+
 ## [0.2.3 BETA] - 2025-06-12
 ### Changed
 - Banner Grabber upgraded: now attempts to grab banners from all frequently used ports.
