@@ -1,6 +1,6 @@
-# INQUISITOR
+# Inspector
 
-INQUISITOR is a modular cybersecurity toolkit aimed at making common security assessment tasks easier to perform and extend. It currently features a multi-threaded port scanner, a subdomain enumerator, a banner grabber, and a fully functioning path enumerator (directory brute-forcer).
+Inspector is a modular cybersecurity toolkit aimed at making common security assessment tasks easier to perform and extend. It currently features a multi-threaded port scanner, a subdomain enumerator, a banner grabber, and a fully functioning path enumerator (directory brute-forcer).
 
 ## Features
 
@@ -9,7 +9,7 @@ INQUISITOR is a modular cybersecurity toolkit aimed at making common security as
 - 🏷️ Banner grabbing for open ports (now grabs banners from all frequently used ports)
 - 📂 Path enumerator (directory brute-forcer)
 - 🧠 Validates hostnames and IP addresses
-- ⚙️ Reads config from `config_inquisitor.txt` (port range, timeout, threads)
+- ⚙️ Reads config from `config.txt` (port range, timeout, threads)
 - 🛠️ Modular design for future tools
 - 📝 Displays open ports with descriptions and common vulnerabilities
 
@@ -25,20 +25,19 @@ INQUISITOR is a modular cybersecurity toolkit aimed at making common security as
   - Useful for recon and expanding your attack surface analysis
 - **Banner Grabber**
   - Integrated with the port scanner
-  - Fetches service banners from all frequently used ports (recently upgraded)
+  - Fetches service banners from all frequently used ports
 - **Path Enumerator (Directory Brute-Forcer)**
   - Enumerates directories/paths on web servers to find hidden or sensitive locations
-  - Fully functioning as of v0.2.2
 
 ## How to Use
 
 1. Clone the repo:
     ```bash
-    git clone https://github.com/bmp-43/INQUISITOR.git
-    cd INQUISITOR
+    git clone https://github.com/bmp-43/Inspector.git
+    cd Inspector
     ```
 
-2. Make sure `config_inquisitor.txt` exists with values like:
+2. Make sure `config_inspector.txt` exists with values like:
     ```
     timeout=0.7
     max_threads=100
@@ -48,7 +47,7 @@ INQUISITOR is a modular cybersecurity toolkit aimed at making common security as
 
 3. Run the toolkit:
     ```bash
-    python3 inquisitor.py
+    python3 inspector.py
     ```
 
     - Select the tool you want to use (Port Scanner, Subdomain Enumerator, or Path Enumerator).
