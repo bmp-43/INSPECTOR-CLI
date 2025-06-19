@@ -4,6 +4,7 @@ import aiohttp
 from colorama import Fore, Style
 import os
 import sys
+import requests
 #Openning Configuration file
 
 def config(filename):
@@ -18,7 +19,7 @@ def config(filename):
 
 base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 enumerator_dir = os.path.dirname(os.path.abspath(__file__))
-config_path = os.path.join(base_dir, "config", "config_inquisitor.txt")
+config_path = os.path.join(base_dir, "config", "config.txt")
 if not os.path.isfile(config_path):
     print(f"Config file not found at: {config_path}")
     sys.exit(1)
@@ -309,7 +310,7 @@ def tool():
         if mode == "1" or mode.lower() == "subdomain enumerator":
             print("-" * 50)
             print(f"{Fore.CYAN}[i]{Style.RESET_ALL} Using subdomain wordlist from config: {settings.get('subdomain_wordlist')}")
-            print(f"{Fore.LIGHTBLACK_EX}Edit 'config_inquisitor.txt' to change the wordlist path.{Style.RESET_ALL}")
+            print(f"{Fore.LIGHTBLACK_EX}Edit 'config.txt' to change the wordlist path.{Style.RESET_ALL}")
             print("-" * 50)
             try:
                 domain = input("Enter the root domain (e.g google.com): ").strip().lower()
@@ -326,7 +327,7 @@ def tool():
             
             print("-" * 50)
             print(f"{Fore.CYAN}[i]{Style.RESET_ALL} Using path wordlist from config: {settings.get('paths_wordlist')}")
-            print(f"{Fore.LIGHTBLACK_EX}Edit 'config_inquisitor.txt' to change the wordlist path.{Style.RESET_ALL}")
+            print(f"{Fore.LIGHTBLACK_EX}Edit 'config.txt' to change the wordlist path.{Style.RESET_ALL}")
             print("-" * 50)
             try:
                 domain = input("Enter the root domain (e.g google.com): ").strip().lower()
