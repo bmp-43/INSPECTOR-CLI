@@ -18,7 +18,7 @@ def config(filename):
     return config
 
 base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-config_path = os.path.join(base_dir, "config", "config_inquisitor.txt")
+config_path = os.path.join(base_dir, "config", "config.txt")
 
 if not os.path.isfile(config_path):
     print(f"{Fore.RED}Config file not found at: {config_path}{Style.RESET_ALL}")
@@ -55,12 +55,12 @@ PROTOCOL_PROBES = {
     21: (b"\r\n", False),                             # FTP
     22: (None, False),                                # SSH
     23: (b"\r\n", False),                             # Telnet
-    25: (b"EHLO inquisitor.local\r\n", False),        # SMTP
+    25: (b"EHLO inspeector.local\r\n", False),        # SMTP
     80: (b"HEAD / HTTP/1.0\r\n\r\n", False),          # HTTP
     110: (b"\r\n", False),                            # POP3
     143: (b"\r\n", False),                            # IMAP
     443: (b"HEAD / HTTP/1.0\r\n\r\n", True),          # HTTPS
-    465: (b"EHLO inquisitor.local\r\n", True),        # SMTPS
+    465: (b"EHLO inspector.local\r\n", True),        # SMTPS
     993: (b"\r\n", True),                             # IMAPS
     995: (b"\r\n", True),                             # POP3S
     8443: (b"HEAD / HTTP/1.0\r\n\r\n", True),         # HTTPS-alt
