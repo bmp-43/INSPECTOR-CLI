@@ -1,6 +1,6 @@
 # Inspector
 
-Inspector is a modular cybersecurity toolkit aimed at making common security assessment tasks easier to perform and extend. It currently features a multi-threaded port scanner, a subdomain enumerator, a banner grabber, and a fully functioning path enumerator (directory brute-forcer).
+Inspector is a modular cybersecurity toolkit aimed at making common security assessment tasks easier to perform and extend. It currently features a multi-threaded port scanner, a subdomain enumerator, a path enumerator, and now a basic hash identifier.
 
 ## Features
 
@@ -12,6 +12,7 @@ Inspector is a modular cybersecurity toolkit aimed at making common security ass
 - ⚙️ Reads config from `config.txt` (port range, timeout, threads)
 - 🛠️ Modular design for future tools
 - 📝 Displays open ports with descriptions and common vulnerabilities
+- #️⃣ Hash identifier (new in 0.3.1 BETA, detects hash types)
 
 ## Current Toolset
 
@@ -28,6 +29,9 @@ Inspector is a modular cybersecurity toolkit aimed at making common security ass
   - Fetches service banners from all frequently used ports
 - **Path Enumerator (Directory Brute-Forcer)**
   - Enumerates directories/paths on web servers to find hidden or sensitive locations
+- **Hash Identifier** (NEW in 0.3.1 BETA)
+  - Identifies the type of a given hash (MD5, SHA1, SHA256, etc.)
+  - Note: Currently, this tool only identifies hash types. Major upgrades are planned for the next release.
 
 ## How to Use
 
@@ -50,11 +54,12 @@ Inspector is a modular cybersecurity toolkit aimed at making common security ass
     python3 inspector.py
     ```
 
-    - Select the tool you want to use (Port Scanner, Subdomain Enumerator, or Path Enumerator).
+    - Select the tool you want to use (Port Scanner, Subdomain Enumerator, Path Enumerator, or Hash Identifier).
     - Follow the prompts for each tool.
     - For the Port Scanner, enter the IP address or domain to scan.
     - For the Subdomain Enumerator, enter the domain to enumerate.
     - For the Path Enumerator, enter the target URL/domain to brute-force directories.
+    - For the Hash Identifier, input the hash string you want to identify.
 
 ## Folder Structure
 
@@ -64,11 +69,10 @@ The project folder structure was reorganized in 0.2.0 ALPHA for better modularit
 
 - [✓] Banner grabber (now upgraded, grabs banners from all frequently used ports)
 - [✓] Path enumerator (directory brute-forcer)
-- Hash identifier
-- IP geolocator
+- [✓] Hash identifier (basic version added in 0.3.1 BETA; significant upgrade planned next)
+- JS File URL Extractor
 - WHOIS lookup
 - Reverse DNS
-- Future: Exploit suggestions based on open ports
 
 ## License
 
