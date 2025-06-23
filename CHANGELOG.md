@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.1 BETA] - 2025-06-23
+### Added
+- Hash Identifier tool: Basic version that detects and identifies hash types (MD5, SHA1, SHA256, etc.).
+  - Note: This tool currently only identifies hash types. A significant upgrade is planned for the next version.
+
+### Changed
+- Updated documentation to reflect the new tool and beta status.
+
 ## [0.3.0] - 2025-06-19
 ### Changed
 - Project renamed from "INQUISITOR" to **Inspector**.
@@ -38,10 +46,15 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Port scanner received several bug fixes for improved reliability.
 
-## [0.1.5 BETA] - 2025-05-27
+## [0.1.1 BETA] - 2025-05-27
 ### Changed
 - Port scanner updated for faster scanning.
 - Added display of brief explanations for each port and its possible vulnerabilities.
+
+## [0.1.0 BETA] - 2025-05-23
+### Added
+- Initial release.
+- Basic multi-threaded port scanner.
 
 ## [0.1.0 BETA] - 2025-05-23
 ### Added
