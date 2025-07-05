@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.2 BETA] - 2025-07-05
+### Changed
+- Hash Identifier is now called **Malware Analyser**.
+- The tool now uses the VirusTotal API to scan hash values, URLs, and files for malware analysis.
+
+### Added
+- Support for scanning URLs and files in addition to hash values via the Malware Analyser tool.
+
 ## [0.3.1 BETA] - 2025-06-23
 ### Added
 - Hash Identifier tool: Basic version that detects and identifies hash types (MD5, SHA1, SHA256, etc.).
@@ -50,11 +58,6 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - Port scanner updated for faster scanning.
 - Added display of brief explanations for each port and its possible vulnerabilities.
-
-## [0.1.0 BETA] - 2025-05-23
-### Added
-- Initial release.
-- Basic multi-threaded port scanner.
 
 ## [0.1.0 BETA] - 2025-05-23
 ### Added
