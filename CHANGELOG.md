@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.0] - 2025-07-17
+### Added
+- **DNS/WHOIS Lookup** tool: Retrieve DNS and WHOIS information for domains. Useful for reconnaissance and domain ownership checks.
+
+### Changed
+- Documentation updated to reflect the new DNS/WHOIS Lookup tool and version 0.4.0 BETA
+
+
 ## [0.3.2 BETA] - 2025-07-05
 ### Changed
 - Hash Identifier is now called **Malware Analyser**.
