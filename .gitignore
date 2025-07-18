@@ -1,0 +1,54 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+.ENV/
+
+# VSCode & JetBrains IDEs
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Environment variables
+.env
+.env.*
+
+# Byte-compiled and test output
+*.pyc
+*.pyd
+*.pdb
+*.egg-info/
+dist/
+build/
+
+# Jupyter Notebooks checkpoints
+.ipynb_checkpoints/
+
+# Pylint/mypy/pytest
+.mypy_cache/
+.pytest_cache/
+.cache/
+
+# Pip dependency graph
+pip-log.txt
+
+# Temporary test files
+test_*.py
+*_test.py
+
+# Test folders (optional if you keep tests out of repo)
+tests/
+__tests__/
+
