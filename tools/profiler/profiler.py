@@ -1,5 +1,6 @@
 import whois
 from colorama import Fore, Style
+import dns.resolver
 class Profiler:
     def __init__(self, domain):
         self.domain = domain
@@ -9,7 +10,16 @@ class Profiler:
         self.contact = {}
         self.security = None
         self.additional_info = {}
-
+        self.record_types = {
+            "A":     "Maps domain to IPv4 address",
+            "AAAA":  "Maps domain to IPv6 address",
+            "MX":    "Mail servers responsible for email",
+            "TXT":   "Text records (SPF, verification, etc.)",
+            "NS":    "Authoritative name servers for the domain",
+            "CNAME": "Alias pointing to another domain",
+            "SOA":   "Start of Authority — DNS admin & config"
+        }
+        self.results = {}
 
     def lookup(self):
         response = whois.whois(self.domain)
@@ -46,7 +56,28 @@ class Profiler:
         }
 
     
+    def dns_records_fetching(self):
+        
+
+        for rtype in self.record_types:
+            try:
+                answers = dns.resolver.resolve(self.domain, rtype)
+                records = []
+                for record in answers:
+                    records.append(record.to_text())
+                self.results[rtype] = records
+
+            except Exception:
+                self.results[rtype] = []
+
+
+
+
+
     def result(self):
+
+        #Whois result
+
         print(f"{Fore.BLUE}Domain Information{Style.RESET_ALL}")
         for i in self.domain_info:
             if self.domain_info[i]:
@@ -86,11 +117,22 @@ class Profiler:
                     print(f"  {i.capitalize()}: {filtered[i]}")
 
 
+        #Resolved DNS
+        print(f"\n{Fore.LIGHTCYAN_EX}=== Resolved DNS Information ==={Style.RESET_ALL}")
+        for rtype, info in self.results.items():
+            description = self.record_types.get(rtype, "")
+            if info:
+                print(f"{Fore.YELLOW} \n{rtype} Records: - {description}{Style.RESET_ALL}")
+                for r in info:
+                    print(f" - {r}")
 
+
+      
 
 
 if __name__ == "__main__":
     initializator=Profiler(domain=input("Enter domain name: "))
     initializator.lookup()
+    initializator.dns_records_fetching()
     initializator.result()
 

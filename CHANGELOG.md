@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.1 BETA] - 2025-07-18
+### Added
+- **DNS resolver integration** for the Profiler tool in the DNS/WHOIS Lookup module. The Profiler now fetches and displays DNS records (A, AAAA, MX, TXT, NS, CNAME, SOA) for domains.
+
 ## [0.4.0] - 2025-07-17
 ### Added
 - **DNS/WHOIS Lookup** tool: Retrieve DNS and WHOIS information for domains. Useful for reconnaissance and domain ownership checks.

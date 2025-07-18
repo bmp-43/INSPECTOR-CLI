@@ -1,10 +1,10 @@
 # Inspector
 
-Inspector is a modular cybersecurity toolkit aimed at making common security assessment tasks easier to perform and extend. It currently features a multi-threaded port scanner, a subdomain enumerator, a path enumerator, a banner grabber, a **Malware Analyser** (formerly Hash Identifier) that uses the VirusTotal API for scanning, and now DNS/WHOIS lookup.
+Inspector is a beginner-friendly cybersecurity toolkit designed to make common security assessment tasks simple, educational, and accessible. Its modular design helps newcomers understand the basics of cybersecurity, networking, and reconnaissance before moving on to more advanced tools. Inspector emphasizes clarity, ease of use, and practical learning, making it an ideal starting point for anyone new to the field.
 
 ## Version
 
-**Current version:** 0.4.0 BETA
+**Current version:** 0.4.1 BETA
 
 ## Features
 
@@ -17,7 +17,7 @@ Inspector is a modular cybersecurity toolkit aimed at making common security ass
 - 🛠️ Modular design for future tools
 - 📝 Displays open ports with descriptions and common vulnerabilities
 - 🦠 **Malware Analyser** (uses VirusTotal for scanning hashes, URLs, and files)
-- 🗂️ **DNS/WHOIS Lookup** (new in 0.4.0 BETA)
+- 🗂️ **DNS/WHOIS Lookup** (improved in 0.4.1 BETA with DNS resolver for the Profiler tool)
 
 ## Current Toolset
 
@@ -34,10 +34,11 @@ Inspector is a modular cybersecurity toolkit aimed at making common security ass
   - Fetches service banners from all frequently used ports
 - **Path Enumerator (Directory Brute-Forcer)**
   - Enumerates directories/paths on web servers to find hidden or sensitive locations
-- **Malware Analyser** (formerly Hash Identifier)
+- **Malware Analyser**
   - Uses the VirusTotal API to scan hash values, URLs, and files for malware analysis
 - **DNS/WHOIS Lookup**
   - Retrieves DNS and WHOIS information for domains
+  - Now features DNS resolver integration in the Profiler tool (new in 0.4.1 BETA)
   - Useful for reconnaissance and domain ownership checks
 
 ## How to Use
@@ -80,7 +81,7 @@ The project folder structure was reorganized in 0.2.0 ALPHA for better modularit
 - [✓] Banner grabber (now upgraded, grabs banners from all frequently used ports)
 - [✓] Path enumerator (directory brute-forcer)
 - [✓] Malware analyser (VirusTotal-powered, scans hashes, URLs, and files)
-- [✓] WHOIS lookup (added in 0.4.0)
+- [✓] WHOIS lookup (added in 0.4.0, improved in 0.4.1 with DNS resolver)
 - Reverse DNS
 - Future: Exploit suggestions based on open ports
 
@@ -92,4 +93,4 @@ You must also share your changes under the same license.
 No one can legally steal or privatize your code.  
 Commercial use is allowed only if they also keep it open-source.
 
-Read more: https://www.gnu.org/licenses/gpl-3.0.en.html
+Read more:
