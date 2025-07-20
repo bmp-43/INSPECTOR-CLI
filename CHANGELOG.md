@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.2 BETA] - 2025-07-20
+### Added
+- **IP WHOIS lookup**: The Profiler tool now fetches and displays WHOIS information for resolved IP addresses.
+- **Reverse DNS lookup**: The Profiler tool now performs reverse DNS lookups for all resolved IP addresses.
+
+
 ## [0.4.1 BETA] - 2025-07-18
 ### Added
 - **DNS resolver integration** for the Profiler tool in the DNS/WHOIS Lookup module. The Profiler now fetches and displays DNS records (A, AAAA, MX, TXT, NS, CNAME, SOA) for domains.

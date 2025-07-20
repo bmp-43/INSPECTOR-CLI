@@ -4,20 +4,34 @@ Inspector is a beginner-friendly cybersecurity toolkit designed to make common s
 
 ## Version
 
-**Current version:** 0.4.1 BETA
+**Current version:** 0.4.2 BETA
 
 ## Features
 
-- 🔍 Multi-threaded port scanning for speed
-- 🌐 Fast subdomain enumeration
-- 🏷️ Banner grabbing for open ports (now grabs banners from all frequently used ports)
-- 📂 Path enumerator (directory brute-forcer)
-- 🧠 Validates hostnames and IP addresses
-- ⚙️ Reads config from `config.txt` (port range, timeout, threads)
-- 🛠️ Modular design for future tools
-- 📝 Displays open ports with descriptions and common vulnerabilities
-- 🦠 **Malware Analyser** (uses VirusTotal for scanning hashes, URLs, and files)
-- 🗂️ **DNS/WHOIS Lookup** (improved in 0.4.1 BETA with DNS resolver for the Profiler tool)
+- 🔍 Multi-threaded port scanning for speed  
+  <sub>*(since 0.1.0 BETA)*</sub>
+- 🌐 Fast subdomain enumeration  
+  <sub>*(since 0.2.0 ALPHA)*</sub>
+- 🏷️ Banner grabbing for open ports (now grabs banners from all frequently used ports)  
+  <sub>*(basic since 0.2.1 BETA, upgraded in 0.2.3 BETA)*</sub>
+- 📂 Path enumerator (directory brute-forcer)  
+  <sub>*(since 0.2.2)*</sub>
+- 🧠 Validates hostnames and IP addresses  
+  <sub>*(since 0.1.1 BETA)*</sub>
+- ⚙️ Reads config from `config.txt` (port range, timeout, threads)  
+  <sub>*(since 0.1.0 BETA)*</sub>
+- 🛠️ Modular design for future tools  
+  <sub>*(since 0.2.0 ALPHA)*</sub>
+- 📝 Displays open ports with descriptions and common vulnerabilities  
+  <sub>*(since 0.1.1 BETA)*</sub>
+- 🦠 **Malware Analyser** (uses VirusTotal for scanning hashes, URLs, and files)  
+  <sub>*(hash identifier since 0.3.1 BETA, renamed and upgraded in 0.3.2 BETA)*</sub>
+- 🗂️ **Domain DNS/WHOIS Lookup**  
+  <sub>*(added in 0.4.0, improved with DNS resolver in 0.4.1 BETA)*</sub>
+- 🌍 **IP WHOIS Lookup**  
+  <sub>*(added in 0.4.2 BETA)*</sub>
+- 🔄 **Reverse DNS Lookup**  
+  <sub>*(added in 0.4.2 BETA)*</sub>
 
 ## Current Toolset
 
@@ -40,6 +54,10 @@ Inspector is a beginner-friendly cybersecurity toolkit designed to make common s
   - Retrieves DNS and WHOIS information for domains
   - Now features DNS resolver integration in the Profiler tool (new in 0.4.1 BETA)
   - Useful for reconnaissance and domain ownership checks
+- **IP WHOIS Lookup**
+  - Retrieves WHOIS information for resolved IP addresses (added in 0.4.2 BETA)
+- **Reverse DNS Lookup**
+  - Resolves hostnames for IP addresses found (added in 0.4.2 BETA)
 
 ## How to Use
 
@@ -64,13 +82,14 @@ Inspector is a beginner-friendly cybersecurity toolkit designed to make common s
     python3 inspector.py
     ```
 
-    - Select the tool you want to use (Port Scanner, Subdomain Enumerator, Path Enumerator, Banner Grabber, Malware Analyser, or DNS/WHOIS Lookup).
+    - Select the tool you want to use (Port Scanner, Subdomain Enumerator, Path Enumerator, Banner Grabber, Malware Analyser, DNS/WHOIS Lookup, IP WHOIS Lookup, or Reverse DNS Lookup).
     - Follow the prompts for each tool.
     - For the Port Scanner, enter the IP address or domain to scan.
     - For the Subdomain Enumerator, enter the domain to enumerate.
     - For the Path Enumerator, enter the target URL/domain to brute-force directories.
     - For the Malware Analyser, input the hash string, URL, or file you want to scan.
     - For DNS/WHOIS Lookup, enter the domain to retrieve DNS and WHOIS information.
+    - For IP WHOIS Lookup and Reverse DNS, these are integrated into the Profiler tool.
 
 ## Folder Structure
 
@@ -82,7 +101,8 @@ The project folder structure was reorganized in 0.2.0 ALPHA for better modularit
 - [✓] Path enumerator (directory brute-forcer)
 - [✓] Malware analyser (VirusTotal-powered, scans hashes, URLs, and files)
 - [✓] WHOIS lookup (added in 0.4.0, improved in 0.4.1 with DNS resolver)
-- Reverse DNS
+- [✓] Reverse DNS (added in 0.4.2 BETA)
+- [✓] IP WHOIS Lookup (added in 0.4.2 BETA)
 - Future: Exploit suggestions based on open ports
 
 ## License
@@ -93,4 +113,4 @@ You must also share your changes under the same license.
 No one can legally steal or privatize your code.  
 Commercial use is allowed only if they also keep it open-source.
 
-Read more:
+Read more: https://www.gnu.org/licenses/gpl
