@@ -47,6 +47,8 @@ pip-log.txt
 # Temporary test files
 test_*.py
 *_test.py
+test.py
+
 
 # Test folders (optional if you keep tests out of repo)
 tests/

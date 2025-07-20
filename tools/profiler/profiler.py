@@ -1,6 +1,9 @@
 import whois
 from colorama import Fore, Style
 import dns.resolver
+import socket
+from ipwhois import IPWhois
+
 class Profiler:
     def __init__(self, domain):
         self.domain = domain
@@ -20,119 +23,169 @@ class Profiler:
             "SOA":   "Start of Authority — DNS admin & config"
         }
         self.results = {}
+        self.ipv4 = ""
+        self.ipv6 = ""
+        self.reversed_dns = []
+        self.ip_whois = {}
 
-    def lookup(self):
-        response = whois.whois(self.domain)
-        self.domain_info = {
-            "domain": response.get("domain_name"),
-            "registrar": response.get("registrar"),
-            "registrar_url": response.get("registrar_url"),
-            "whois_server": response.get("whois_server"),
-        }
-        self.dates = {
-            "created": response.get("creation_date")[-1] if isinstance(response.get("creation_date"), list) else response.get("creation_date"),
-            "updated": response.get("updated_date")[-1] if isinstance(response.get("updated_date"), list) else response.get("updated_date"),
-            "expires": response.get("expiration_date")[-1] if isinstance(response.get("expiration_date"), list) else response.get("expiration_date"),
-        }
+    def domain_lookup(self):
+        try:
+            response = whois.whois(self.domain)
+            self.domain_info = {
+                "domain": response.get("domain_name"),
+                "registrar": response.get("registrar"),
+                "registrar_url": response.get("registrar_url"),
+                "whois_server": response.get("whois_server"),
+            }
+            self.dates = {
+                "created": response.get("creation_date")[-1] if isinstance(response.get("creation_date"), list) else response.get("creation_date"),
+                "updated": response.get("updated_date")[-1] if isinstance(response.get("updated_date"), list) else response.get("updated_date"),
+                "expires": response.get("expiration_date")[-1] if isinstance(response.get("expiration_date"), list) else response.get("expiration_date"),
+            }
+            self.name_servers = response.get("name_servers", [])
+            self.contact = {
+                "emails": response.get("emails", []),
+                "phone": response.get("phone")
+            }
+            self.security = response.get("dnssec")
+            self.additional_info = {
+                "status": response.get("status", []),
+                "reseller": response.get("reseller"),
+                "referral_url": response.get("referral_url"),
+                "name": response.get("name"),
+                "address": response.get("address"),
+                "city": response.get("city"),
+                "state": response.get("state"),
+                "registrant_postal_code": response.get("registrant_postal_code")
+            }
+        except Exception as e:
+            print(f"{Fore.RED}[!] WHOIS lookup failed: {e}{Style.RESET_ALL}")
 
-        self.name_servers = response.get("name_servers", [])
-            
-        self.contact = {
-            "emails": response.get("emails", []),
-            "phone": response.get("phone")
-        }
-        self.security = response.get("dnssec")
+    def ip_loookup(self):
+        try:
+            for ip in self.ipv4 + self.ipv6:
+                try:
+                    obj = IPWhois(ip)
+                    res = obj.lookup_rdap()
+                    self.ip_whois[ip] = {
+                        "name": res["network"]["name"],
+                        "cidr": res["network"]["cidr"],
+                        "asn": res.get("asn_description"),
+                        "country": res["network"]["country"]
+                    }
+                except Exception:
+                    self.ip_whois[ip] = None
+        except Exception as e:
+            print(f"{Fore.RED}[!] IP WHOIS lookup error: {e}{Style.RESET_ALL}")
 
-        self.additional_info = {
-            "status": response.get("status", []),
-            "reseller": response.get("reseller"),
-            "referral_url": response.get("referral_url"),
-            "name": response.get("name"),
-            "address": response.get("address"),
-            "city": response.get("city"),
-            "state": response.get("state"),
-            "registrant_postal_code": response.get("registrant_postal_code")
-
-        }
-
-    
     def dns_records_fetching(self):
-        
+        try:
+            for rtype in self.record_types:
+                try:
+                    answers = dns.resolver.resolve(self.domain, rtype)
+                    records = []
+                    for record in answers:
+                        records.append(record.to_text())
+                    self.results[rtype] = records
+                except Exception:
+                    self.results[rtype] = []
+            self.ipv4 = self.results.get("A", [])
+            self.ipv6 = self.results.get("AAAA", [])
+        except Exception as e:
+            print(f"{Fore.RED}[!] DNS records fetch error: {e}{Style.RESET_ALL}")
 
-        for rtype in self.record_types:
-            try:
-                answers = dns.resolver.resolve(self.domain, rtype)
-                records = []
-                for record in answers:
-                    records.append(record.to_text())
-                self.results[rtype] = records
-
-            except Exception:
-                self.results[rtype] = []
-
-
-
-
+    def reverse_dns(self):
+        try:
+            for ip in self.ipv4 + self.ipv6:
+                try:
+                    hostname, _, _ = socket.gethostbyaddr(ip)
+                    self.reversed_dns.append((ip, hostname))
+                except Exception:
+                    self.reversed_dns.append((ip, None))
+        except Exception as e:
+            print(f"{Fore.RED}[!] Reverse DNS lookup error: {e}{Style.RESET_ALL}")
 
     def result(self):
+        try:
+            print(f"\n{Fore.LIGHTCYAN_EX}=== Domain WHOIS information ==={Style.RESET_ALL}")
+            print(f"{Fore.BLUE}Domain Information{Style.RESET_ALL}")
+            for i in self.domain_info:
+                if self.domain_info[i]:
+                    print(f"  {i.capitalize()}: {self.domain_info[i]}")
 
-        #Whois result
+            print(f"\n{Fore.YELLOW}Dates{Style.RESET_ALL}")
+            for i in self.dates:
+                if self.dates[i]:
+                    print(f"  {i.capitalize()}: {self.dates[i]}")
 
-        print(f"{Fore.BLUE}Domain Information{Style.RESET_ALL}")
-        for i in self.domain_info:
-            if self.domain_info[i]:
-                print(f"  {i.capitalize()}: {self.domain_info[i]}")
+            if self.name_servers:
+                print(f"\n{Fore.GREEN}Name Servers{Style.RESET_ALL}")
+                for ns in self.name_servers:
+                    print(f"  - {ns}")
 
-        print(f"\n{Fore.YELLOW}Dates{Style.RESET_ALL}")
-        for i in self.dates:
-            if self.dates[i]:
-                print(f"  {i.capitalize()}: {self.dates[i]}")
+            print(f"\n{Fore.GREEN}Contact Info{Style.RESET_ALL}")
+            for i in self.contact:
+                if self.contact[i]:
+                    if isinstance(self.contact[i], list):
+                        for item in self.contact[i]:
+                            print(f"  {i.capitalize()}: {item}")
+                    else:
+                        print(f"  {i.capitalize()}: {self.contact[i]}")
 
-        if self.name_servers:
-            print(f"\n{Fore.GREEN}Name Servers{Style.RESET_ALL}")
-            for ns in self.name_servers:
-                print(f"  - {ns}")
+            if self.security:
+                print(f"\n{Fore.RED}DNS Security{Style.RESET_ALL}")
+                print(f"  DNSSEC: {self.security}")
 
-        print(f"\n{Fore.CYAN}Contact Info{Style.RESET_ALL}")
-        for i in self.contact:
-            if self.contact[i]:
-                if isinstance(self.contact[i], list):
-                    for item in self.contact[i]:
-                        print(f"  {i.capitalize()}: {item}")
+            filtered = {i: self.additional_info[i] for i in self.additional_info if self.additional_info[i]}
+            if filtered:
+                print(f"\n{Fore.LIGHTBLACK_EX}Additional Info{Style.RESET_ALL}")
+                for i in filtered:
+                    if isinstance(filtered[i], list):
+                        for item in filtered[i]:
+                            print(f"  {i.capitalize()}: {item}")
+                    else:
+                        print(f"  {i.capitalize()}: {filtered[i]}")
+
+            print(f"\n{Fore.CYAN}=== IP WHOIS Information ==={Style.RESET_ALL}")
+            for ip, info in self.ip_whois.items():
+                print(f"\n  {ip}:")
+                if info:
+                    for key, value in info.items():
+                        print(f"    {key.capitalize()}: {value}")
                 else:
-                    print(f"  {i.capitalize()}: {self.contact[i]}")
+                    print("    No WHOIS data found.")
 
-        if self.security:
-            print(f"\n{Fore.RED}DNS Security{Style.RESET_ALL}")
-            print(f"  DNSSEC: {self.security}")
+            print(f"\n{Fore.LIGHTCYAN_EX}=== Resolved DNS Information ==={Style.RESET_ALL}")
+            for rtype, info in self.results.items():
+                description = self.record_types.get(rtype, "")
+                if info:
+                    print(f"{Fore.YELLOW} \n{rtype} Records: - {description}{Style.RESET_ALL}")
+                    for r in info:
+                        print(f" - {r}")
 
-        filtered = {i: self.additional_info[i] for i in self.additional_info if self.additional_info[i]}
-        if filtered:
-            print(f"\n{Fore.LIGHTBLACK_EX}Additional Info{Style.RESET_ALL}")
-            for i in filtered:
-                if isinstance(filtered[i], list):
-                    for item in filtered[i]:
-                        print(f"  {i.capitalize()}: {item}")
+            print(f"\n{Fore.LIGHTCYAN_EX}=== Reversed DNS information ==={Style.RESET_ALL}")
+            for ip, host in self.reversed_dns:
+                if host:
+                    print(f"  {ip} → {host}")
                 else:
-                    print(f"  {i.capitalize()}: {filtered[i]}")
+                    print(f"  {ip} → No reverse DNS found")
 
-
-        #Resolved DNS
-        print(f"\n{Fore.LIGHTCYAN_EX}=== Resolved DNS Information ==={Style.RESET_ALL}")
-        for rtype, info in self.results.items():
-            description = self.record_types.get(rtype, "")
-            if info:
-                print(f"{Fore.YELLOW} \n{rtype} Records: - {description}{Style.RESET_ALL}")
-                for r in info:
-                    print(f" - {r}")
-
+        except Exception as e:
+            print(f"{Fore.RED}[!] Error printing results: {e}{Style.RESET_ALL}")
 
       
 
 
 if __name__ == "__main__":
-    initializator=Profiler(domain=input("Enter domain name: "))
-    initializator.lookup()
-    initializator.dns_records_fetching()
-    initializator.result()
+    try:
+        initializator = Profiler(domain=input("Enter domain name: ").strip())
+        initializator.domain_lookup()
+        initializator.dns_records_fetching()
+        initializator.ip_loookup()
+        initializator.reverse_dns()
+        initializator.result()
+    except KeyboardInterrupt:
+        print(f"{Fore.YELLOW}\n[!] Interrupted by user.{Style.RESET_ALL}")
+    except Exception as e:
+        print(f"{Fore.RED}[!] Fatal error: {e}{Style.RESET_ALL}")
 

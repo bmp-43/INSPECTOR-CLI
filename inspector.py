@@ -8,7 +8,7 @@ from tools.profiler import profiler
 print(f"{Fore.BLUE}-" * 50)
 ascii_banner = pyfiglet.figlet_format(f"INSPECTOR")
 print(ascii_banner)
-print("Version 0.4.1 BETA")
+print("Version 0.4.2 BETA")
 print("-" * 50)
 
 scanner_instance = scanner.PortScanner()
@@ -34,11 +34,12 @@ def weapon():
             print("Shutting down") 
     elif mode == "4" or mode.lower() == "domain profiler":
         try:
-            domain = input("Enter domain name: ")
-            profiler_instance = profiler.Profiler(domain=domain)
-            profiler_instance.lookup()
-            profiler_instance.dns_records_fetching()
-            profiler_instance.result()
+            initializator=profiler.Profiler(domain=input("Enter domain name: "))
+            initializator.domain_lookup()
+            initializator.dns_records_fetching()
+            initializator.ip_loookup()
+            initializator.reverse_dns()
+            initializator.result()
             
         except KeyboardInterrupt:
             print("Shutting down")
