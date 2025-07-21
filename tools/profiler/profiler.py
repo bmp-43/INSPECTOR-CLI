@@ -61,7 +61,7 @@ class Profiler:
         except Exception as e:
             print(f"{Fore.RED}[!] WHOIS lookup failed: {e}{Style.RESET_ALL}")
 
-    def ip_loookup(self):
+    def ip_lookup(self):
         try:
             for ip in self.ipv4 + self.ipv6:
                 try:
@@ -181,11 +181,10 @@ if __name__ == "__main__":
         initializator = Profiler(domain=input("Enter domain name: ").strip())
         initializator.domain_lookup()
         initializator.dns_records_fetching()
-        initializator.ip_loookup()
+        initializator.ip_lookup()
         initializator.reverse_dns()
         initializator.result()
     except KeyboardInterrupt:
-        print(f"{Fore.YELLOW}\n[!] Interrupted by user.{Style.RESET_ALL}")
+        print(f"{Fore.YELLOW}[x] Interrupted by user. Shutting down...{Style.RESET_ALL}")
     except Exception as e:
         print(f"{Fore.RED}[!] Fatal error: {e}{Style.RESET_ALL}")
-

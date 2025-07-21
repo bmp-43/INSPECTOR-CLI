@@ -4,7 +4,7 @@ Inspector is a beginner-friendly cybersecurity toolkit designed to make common s
 
 ## Version
 
-**Current version:** 0.4.2 BETA
+**Current version:** 0.4.3 BETA
 
 ## Features
 
@@ -32,6 +32,10 @@ Inspector is a beginner-friendly cybersecurity toolkit designed to make common s
   <sub>*(added in 0.4.2 BETA)*</sub>
 - 🔄 **Reverse DNS Lookup**  
   <sub>*(added in 0.4.2 BETA)*</sub>
+- 🧩 Unified **Recon & OSINT** menu for all reconnaissance tools  
+  <sub>*(since 0.4.3 BETA)*</sub>
+- 🎨 Consistent color-coded exception and info messages  
+  <sub>*(since 0.4.3 BETA)*</sub>
 
 ## Current Toolset
 
@@ -40,24 +44,14 @@ Inspector is a beginner-friendly cybersecurity toolkit designed to make common s
   - Takes an IP or domain as input
   - Prints out open ports, a brief description for each, and common vulnerabilities associated with those ports
   - Includes banner grabbing for all frequently used ports
-- **Subdomain Enumerator**
-  - Quickly finds subdomains for a given domain
-  - Useful for recon and expanding your attack surface analysis
-- **Banner Grabber**
-  - Integrated with the port scanner
-  - Fetches service banners from all frequently used ports
-- **Path Enumerator (Directory Brute-Forcer)**
-  - Enumerates directories/paths on web servers to find hidden or sensitive locations
+- **Recon & OSINT**
+  - **Subdomain Enumerator**: Quickly finds subdomains for a given domain
+  - **Path Enumerator (Directory Brute-Forcer)**: Enumerates directories/paths on web servers to find hidden or sensitive locations
+  - **DNS/WHOIS Lookup**: Retrieves DNS and WHOIS information for domains (with DNS resolver integration)
+  - **IP WHOIS Lookup**: Retrieves WHOIS information for resolved IP addresses
+  - **Reverse DNS Lookup**: Resolves hostnames for IP addresses found
 - **Malware Analyser**
   - Uses the VirusTotal API to scan hash values, URLs, and files for malware analysis
-- **DNS/WHOIS Lookup**
-  - Retrieves DNS and WHOIS information for domains
-  - Now features DNS resolver integration in the Profiler tool (new in 0.4.1 BETA)
-  - Useful for reconnaissance and domain ownership checks
-- **IP WHOIS Lookup**
-  - Retrieves WHOIS information for resolved IP addresses (added in 0.4.2 BETA)
-- **Reverse DNS Lookup**
-  - Resolves hostnames for IP addresses found (added in 0.4.2 BETA)
 
 ## How to Use
 
@@ -82,14 +76,14 @@ Inspector is a beginner-friendly cybersecurity toolkit designed to make common s
     python3 inspector.py
     ```
 
-    - Select the tool you want to use (Port Scanner, Subdomain Enumerator, Path Enumerator, Banner Grabber, Malware Analyser, DNS/WHOIS Lookup, IP WHOIS Lookup, or Reverse DNS Lookup).
+    - Select the tool you want to use (Port Scanner, Malware Analyser, or Recon & OSINT).
     - Follow the prompts for each tool.
     - For the Port Scanner, enter the IP address or domain to scan.
-    - For the Subdomain Enumerator, enter the domain to enumerate.
-    - For the Path Enumerator, enter the target URL/domain to brute-force directories.
     - For the Malware Analyser, input the hash string, URL, or file you want to scan.
-    - For DNS/WHOIS Lookup, enter the domain to retrieve DNS and WHOIS information.
-    - For IP WHOIS Lookup and Reverse DNS, these are integrated into the Profiler tool.
+    - For Recon & OSINT, choose from Subdomain Enumerator, Directory Brute-Forcer, or DNS Profiler (which includes DNS/WHOIS, IP WHOIS, and Reverse DNS lookups).
+
+    > **Note:** All exception and status messages now use consistent prefixes and color coding for clarity.  
+    > If you see threading-related warnings or tracebacks when exiting, this is a known Python 3.13 issue and does not affect Inspector's functionality.
 
 ## Folder Structure
 
@@ -103,7 +97,9 @@ The project folder structure was reorganized in 0.2.0 ALPHA for better modularit
 - [✓] WHOIS lookup (added in 0.4.0, improved in 0.4.1 with DNS resolver)
 - [✓] Reverse DNS (added in 0.4.2 BETA)
 - [✓] IP WHOIS Lookup (added in 0.4.2 BETA)
-- Future: Exploit suggestions based on open ports
+- [✓] Unified Recon & OSINT menu (since 0.4.3 BETA)
+- [✓] Consistent color-coded exception and info messages (since 0.4.3 BETA)
+- Future: General Improvements and new tools
 
 ## License
 

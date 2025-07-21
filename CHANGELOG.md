@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.3 BETA] - 2025-07-21
+### Changed
+- Unified Enumerator and Profiler under a new menu category: **Recon & OSINT**
+- Polished the Port Scanner output formatting and coloring for clarity
+- Main menu restructured and styled using consistent color formatting
+- Updated all exception messages across tools with consistent formatting and standardized prefixes:
+    - `[!]` for errors
+    - `[x]` for interruptions
+    - `[i]` for neutral info
+    - `[?]` for warnings
+- Added message clarifying Python 3.13 threading warnings aren't user faults
+- Fully commented code for clarity and future
+
 ## [0.4.2 BETA] - 2025-07-20
 ### Added
 - **IP WHOIS lookup**: The Profiler tool now fetches and displays WHOIS information for resolved IP addresses.

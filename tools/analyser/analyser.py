@@ -8,7 +8,7 @@ import sys
 import hashlib
 
 
-
+# Reads key-value settings from config.txt and returns them as a dictionary
 def config(filename):
     config = {}
     with open(filename, "r") as f:
@@ -23,22 +23,30 @@ config_path = os.path.join(base_dir, "config", "config.txt")
 settings = config(config_path)
 
 
+
+# Base class for all analysis types — stores the VirusTotal API key
 class MalwareAnalyser:
     def __init__(self, api_key):
         self.api_key = api_key
 
+
+# Class for analyzing hash values — identifies hash type and queries VirusTotal
 class HashScanner(MalwareAnalyser):
     def __init__(self, api_key, h_value, fail = 0):
         super().__init__(api_key)
         self.h_value = h_value
         self.fail = fail
 
+
+    # Checks if the hash format matches bcrypt pattern (60 characters with $2a$, $2b$, $2y$)
     def bcrypt_check(self):
         if self.h_value.startswith(("$2a$", "$2b$", "$2y$")) and len(self.h_value) == 60:
             print(f"{Fore.BLUE}Provided hash is bcrypt{Style.RESET_ALL}")
         else:
             self.fail += 1
 
+
+    # Checks if hash is likely MD5 or NTLM based on hex and casing
     def md5_ntlm_check(self):
         if len(self.h_value) == 32 and all(c in "0123456789abcdefABCDEF" for c in self.h_value):
             if self.h_value.isupper():
@@ -50,6 +58,8 @@ class HashScanner(MalwareAnalyser):
         else:
             self.fail += 1
 
+
+    # Detects SHA1, SHA256, SHA512 based on hash length and format
     def sha_check(self):
         if len(self.h_value) == 40 and all(c in "0123456789abcdefABCDEF" for c in self.h_value):
             print(f"{Fore.BLUE}The hash you provided is likely SHA1 (or possibly RIPEMD-160){Style.RESET_ALL}")
@@ -60,6 +70,8 @@ class HashScanner(MalwareAnalyser):
         else:
             self.fail += 1
 
+
+    # Identifies MySQL 5.x password hashes (starts with '*' and 41 chars long)
     def mysql5_check(self):
         if len(self.h_value) == 41 and self.h_value.startswith("*"):
             body = self.h_value[1:]
@@ -70,6 +82,8 @@ class HashScanner(MalwareAnalyser):
         else:
             self.fail += 1
 
+
+    # Identifies simple 8-character CRC32 hashes
     def crc32_check(self):
         if len(self.h_value) == 8 and all(c in "0123456789abcdefABCDEF" for c in self.h_value):
             print(f"{Fore.BLUE}The hash you provided is likely CRC32 (non-cryptographic){Style.RESET_ALL}")
@@ -78,6 +92,7 @@ class HashScanner(MalwareAnalyser):
 
 
 
+    # Sends a VirusTotal API request to fetch full analysis report for a hash
     def vt_lookup(self, hash_value):
         if not self.api_key:
             print(f"{Fore.RED}[VT] API key not found. Please set it in config/keys.txt{Style.RESET_ALL}")
@@ -133,12 +148,14 @@ class HashScanner(MalwareAnalyser):
 
         except Exception as e:
             print(f"{Fore.RED}[VT] Exception: {e}{Style.RESET_ALL}")
+
+    # Entry point for hash scanning: checks format, then fetches VT report if recognized
     def start(self):
         try:
             while True:
                 
                 if not self.h_value:
-                    print(f"{Fore.RED}Hash cannot be empty. Try again.{Style.RESET_ALL}")
+                    print(f"{Fore.RED}[!] Hash cannot be empty. Try again.{Style.RESET_ALL}")
                     continue
                 self.fail = 0  
                 self.bcrypt_check()
@@ -150,19 +167,23 @@ class HashScanner(MalwareAnalyser):
                     self.vt_lookup(self.h_value)
                     break 
                 else:
-                    print(f"{Fore.RED}Unrecognized hash. Please try again.{Style.RESET_ALL}")
+                    print(f"{Fore.RED}[!] Unrecognized hash. Please try again.{Style.RESET_ALL}")
         except KeyboardInterrupt:
-            print(f"\n{Fore.YELLOW}Scan cancelled by user.{Style.RESET_ALL}")
+            print(f"{Fore.YELLOW}[x] Scan cancelled by user.{Style.RESET_ALL}")
         except Exception as e:
-            print(f"{Fore.RED}An unexpected error occurred: {e}{Style.RESET_ALL}")
+            print(f"{Fore.RED}[!] An unexpected error occurred: {e}{Style.RESET_ALL}")
 
 
+
+# Class for analyzing URLs with VirusTotal — checks reputation and detection history
 class UrlAnalyser(MalwareAnalyser):
     def __init__(self, api_key, url):
         super().__init__(api_key)
         self.raw_url = url
         self.encoded_url = base64.urlsafe_b64encode(url.encode()).decode().strip("=")
 
+
+    # Queries VirusTotal for URL analysis — falls back to submission if URL is unknown
     def vt_url_lookup(self):
         if not self.api_key:
             print(f"{Fore.RED}[VT] API key not found. Please set it in config/keys.txt{Style.RESET_ALL}")
@@ -219,6 +240,8 @@ class UrlAnalyser(MalwareAnalyser):
         except Exception as e:
             print(f"{Fore.RED}[VT] Lookup error: {e}{Style.RESET_ALL}")
 
+
+    # Submits a new URL to VirusTotal for analysis when it hasn't been seen before
     def vt_url_submit(self):
         headers = {
             "x-apikey": self.api_key,
@@ -238,11 +261,15 @@ class UrlAnalyser(MalwareAnalyser):
             print(f"{Fore.RED}[VT] URL submit error: {e}{Style.RESET_ALL}")
 
 
+
+# Class for analyzing file uploads via VirusTotal API
 class FileAnalyser(MalwareAnalyser):
     def __init__(self, api_key, file_path):
         super().__init__(api_key)
         self.file_path = file_path
 
+
+    # Uploads the file to VirusTotal and waits for it to be analyzed
     def vt_file_scan(self):
         if not self.api_key:
             print(f"{Fore.RED}[VT] API key not found. Please set it in config/keys.txt{Style.RESET_ALL}")
@@ -277,6 +304,8 @@ class FileAnalyser(MalwareAnalyser):
         except Exception as e:
             print(f"{Fore.RED}[VT] File scan error: {e}{Style.RESET_ALL}")
 
+
+    # Polls the VT analysis endpoint until the file analysis is complete
     def wait_for_report(self, analysis_id, headers, fallback_sha=None):
         try:
             while True:
@@ -303,8 +332,10 @@ class FileAnalyser(MalwareAnalyser):
                 else:
                     print(f"{Fore.RED}[!] Error fetching analysis status: {response.status_code} — {response.text}{Style.RESET_ALL}")
         except KeyboardInterrupt:
-            print(f"\n{Fore.YELLOW}Scan interrupted by user.{Style.RESET_ALL}")
+            print(f"{Fore.YELLOW}[x] Scan interrupted by user.{Style.RESET_ALL}")
 
+
+    # Retrieves the final detailed report for a scanned file
     def fetch_final_file_report(self, file_id, headers):
         url = f"https://www.virustotal.com/api/v3/files/{file_id}"
         response = requests.get(url, headers=headers)
@@ -341,6 +372,8 @@ class FileAnalyser(MalwareAnalyser):
         print(f"[+] Report: https://www.virustotal.com/gui/file/{file_id}{Style.RESET_ALL}\n")
 
 
+
+    # Computes SHA256 hash of a local file — used for matching reports
     def calculate_sha256(self):
         sha256 = hashlib.sha256()
         with open(self.file_path, "rb") as f:
@@ -350,6 +383,8 @@ class FileAnalyser(MalwareAnalyser):
 
 
 
+
+# Validates the VirusTotal API key by pinging the user info endpoint
 def check_vt_key_valid(api_key):
     headers = {"x-apikey": api_key}
     try:
@@ -359,13 +394,15 @@ def check_vt_key_valid(api_key):
         return False
 
 
+
+# Main entry point for choosing hash, URL, or file analysis from user input
 def main():
     try:
         if not check_vt_key_valid(api_key=settings.get("VT_api_key", None)):
             print(f"{Fore.RED}[!] Invalid VirusTotal API key. Please check config.txt{Style.RESET_ALL}")
             sys.exit()
     except Exception:
-        print(f"{Fore.RED}Unexpected error occured.{Style.RESET_ALL}")
+        print(f"{Fore.RED}[!] Unexpected error occurred.{Style.RESET_ALL}")
 
 
     try:
@@ -373,7 +410,7 @@ def main():
         if mode == "1" or mode.lower() == "hash":
             hash_instance = HashScanner(api_key=settings.get("VT_api_key", None), h_value=input("Provide hash for scanning: ").strip())
             hash_instance.start()
-        elif mode == "2" or mode.lower() == "URL":
+        elif mode == "2" or mode.lower() == "url":
             url_instance = UrlAnalyser(api_key=settings.get("VT_api_key", None), url=input("Provide URL for scanning: ").strip())
             url_instance.vt_url_lookup()
         elif mode == "3" or mode.lower() == "file":
@@ -381,9 +418,11 @@ def main():
             file_instance.vt_file_scan()
 
     except KeyboardInterrupt:
-        print("Shutting Down")
+        print(f"{Fore.YELLOW}[x] Interrupted by user. Shutting down...{Style.RESET_ALL}")
     except Exception:
-        print(f"{Fore.RED}Unexpected error occured.{Style.RESET_ALL}")
+        print(f"{Fore.RED}[!] Unexpected error occurred.{Style.RESET_ALL}")
 
+
+# Allows script to be executed directly from CLI
 if __name__ == "__main__":
     main()

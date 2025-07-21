@@ -5,9 +5,18 @@ import os
 import concurrent.futures
 from colorama import Fore, Style
 import ssl
+import atexit
+import threading
+
+# Prevent threading shutdown noise
+try:
+    atexit.unregister(threading._shutdown)
+except Exception:
+    pass
 
 
 
+# Reads configuration settings from the config.txt file
 def config(filename):
     config = {}
     with open(filename, "r") as f:
@@ -21,7 +30,7 @@ base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 config_path = os.path.join(base_dir, "config", "config.txt")
 
 if not os.path.isfile(config_path):
-    print(f"{Fore.RED}Config file not found at: {config_path}{Style.RESET_ALL}")
+    print(f"{Fore.RED}[!] Config file not found at: {config_path}{Style.RESET_ALL}")
     sys.exit(1)
 settings = config(config_path)
 portlist_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "full_port_list.txt")
@@ -29,6 +38,8 @@ portlist_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "full_p
 
 
 
+
+# Retrieves descriptive information about a given port from full_port_list.txt
 def port_info(port):
     port = str(port)
     info_lines = []
@@ -51,6 +62,8 @@ def port_info(port):
     return "\n".join(info_lines) if info_lines else None
     
 
+
+# Mapping of specific ports to protocol-specific probe payloads and SSL requirements
 PROTOCOL_PROBES = {
     21: (b"\r\n", False),                             # FTP
     22: (None, False),                                # SSH
@@ -71,11 +84,15 @@ PROTOCOL_PROBES = {
 
 
 
+
+# Main class responsible for scanning ports on a target machine
 class PortScanner:
     def __init__(self, target=None, max_threads=int(settings.get("max_threads", 100))):
         self.target = target
         self.max_threads = max_threads
 
+
+    # Checks if the user input is a valid IP address or hostname
     def is_valid_input(self, user_input):
         ipv4_pattern = r"^\d{1,3}(\.\d{1,3}){3}$"
         hostname_pattern = r"^(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\.[A-Za-z]{2,})+$"
@@ -83,7 +100,11 @@ class PortScanner:
 
 
 
+
+    # Checks if a single port is open, attempts banner grabbing, and prints port info
     def check_port(self, port):
+
+# Mapping of specific ports to protocol-specific probe payloads and SSL requirements
         probe, use_ssl = PROTOCOL_PROBES.get(port, (None, False))
         try:
             if use_ssl:
@@ -98,61 +119,76 @@ class PortScanner:
                 result = s.connect_ex((self.target, port))
 
             if result == 0:
-                print(f"{Fore.GREEN}Port {port} is open{Style.RESET_ALL}")
+                output = f"{Fore.GREEN}[OPEN] Port: {port}{Style.RESET_ALL}\n"
+
                 banner = ""
                 if probe:
                     try:
                         s.sendall(probe)
                         banner = s.recv(1024).decode(errors="ignore").strip()
                     except Exception as e:
-                        print(f"{Fore.RED}[Banner on port {port}] Error receiving banner: {e}{Style.RESET_ALL}")
+                        banner = f"{Fore.RED}[!] Error receiving banner: {e}{Style.RESET_ALL}"
                 else:
-                    # For protocols that don't expect a probe, you may not get a banner at all
-                    print(f"{Fore.YELLOW}[Banner on port {port}] No probe sent; banner unlikely for this protocol.{Style.RESET_ALL}")
+                    banner = f"{Fore.YELLOW}[!] No probe sent; banner unlikely for this protocol.{Style.RESET_ALL}"
 
-                if banner:
-                    print(f"{Fore.MAGENTA}[Banner on port {port}] {banner}{Style.RESET_ALL}")
-                elif probe:
-                    print(f"{Fore.RED}[Banner on port {port}] No banner received.{Style.RESET_ALL}")
+                output += f"{Fore.MAGENTA}  ├─ Banner: {banner}{Style.RESET_ALL}\n"
 
                 info = port_info(port)
                 if info:
-                    print(f"{Fore.CYAN}{info}{Style.RESET_ALL}")
-                print()
+                    output += f"{Fore.CYAN}"
+                    for line in info.splitlines():
+                        output += f"  ├─ {line}\n"
+                    output += f"{Style.RESET_ALL}"
+                else:
+                    output += f"{Fore.LIGHTBLACK_EX}  └─ Info: No known description in portlist{Style.RESET_ALL}\n"
+
+                print(output)
+
+
             s.close()
         except Exception:
-            print(f"{Fore.RED}[Banner on port {port}] Grab failed or timed out.\n{Style.RESET_ALL}")
+            print(f"{Fore.RED}[!] Banner grab failed or timed out on port {port}.{Style.RESET_ALL}")
 
 
+# Retrieves descriptive information about a given port from full_port_list.txt
+
+
+
+    # Prompts user for target IP/hostname and initiates full port scan using threading
     def scan_port(self):
         while True:
-            user_input = input("Enter target IP address: ")
+            user_input = input("Enter target IP address or its domain: ")
             if not self.is_valid_input(user_input):
-                print("Invalid input. Please enter a valid IPv4 address or hostname.")
+                print(f"{Fore.YELLOW}[?] Invalid input. Please enter a valid IPv4 address or hostname.{Style.RESET_ALL}")
                 continue
             try:
                 self.target = socket.gethostbyname(user_input)
                 print(f"Your target is: {self.target}")
                 break
             except socket.gaierror:
-                print("Invalid IP or hostname. Try again:")
+                print(f"{Fore.YELLOW}[?] Invalid IP or hostname. Try again:{Style.RESET_ALL}")
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=self.max_threads) as executor:
-            executor.map(
-                self.check_port,
-                range(int(settings.get("start_port", 1)), int(settings.get("end_port", 65535)))
-            )
+
+        # Launches threads to scan each port in the configured range
+        try:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=self.max_threads) as executor:
+                executor.map(self.check_port, range(
+                    int(settings.get("start_port", 1)),
+                    int(settings.get("end_port", 65535))
+                ))
+        except KeyboardInterrupt:
+            print(f"{Fore.YELLOW}[x] Scan interrupted by user. Exiting cleanly...{Style.RESET_ALL}")
+            return
 
 
 scan = PortScanner()
-
 try:
+
+# Entry point for standalone execution of the scanner
     if __name__ == "__main__":
         print(f"{Fore.BLUE}-" * 50)
         print(f"{Style.RESET_ALL}")
         scan.scan_port()
         
 except KeyboardInterrupt:
-    print("SHUTTING DOWN")
-
- 
+    print(f"{Fore.YELLOW}[x] Interrupted by user. Shutting down...{Style.RESET_ALL}")

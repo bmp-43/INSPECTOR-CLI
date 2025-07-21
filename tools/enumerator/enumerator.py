@@ -1,12 +1,12 @@
 import asyncio
-import random
 import aiohttp
 from colorama import Fore, Style
 import os
 import sys
-import requests
 #Openning Configuration file
 
+
+# Function to load configuration values from config.txt and return them as a dictionary
 def config(filename):
     config = {}
     with open(filename, "r") as f:
@@ -21,7 +21,7 @@ base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 enumerator_dir = os.path.dirname(os.path.abspath(__file__))
 config_path = os.path.join(base_dir, "config", "config.txt")
 if not os.path.isfile(config_path):
-    print(f"Config file not found at: {config_path}")
+    print(f"{Fore.RED}[!] Config file not found at: {config_path}{Style.RESET_ALL}")
     sys.exit(1)
 
 settings = config(config_path)
@@ -33,6 +33,8 @@ settings = config(config_path)
 
 #Suppressing SSL noise
 
+
+# Function to suppress SSL errors related to aiohttp connections (like APPLICATION_DATA_AFTER_CLOSE_NOTIFY)
 def silence_ssl_error(loop, context):
     msg = context.get("exception")
     if msg and "APPLICATION_DATA_AFTER_CLOSE_NOTIFY" in str(msg):
@@ -40,6 +42,8 @@ def silence_ssl_error(loop, context):
     loop.default_exception_handler(context)
 
 
+
+# Semaphore limiter based on 'semaphore' value in config to control concurrency
 limit = asyncio.Semaphore(float(settings.get("semaphore", 10))) 
 
 
@@ -48,6 +52,8 @@ limit = asyncio.Semaphore(float(settings.get("semaphore", 10)))
 
 #Creating subdomain enumerator logic
 
+
+# Class for performing subdomain enumeration using an async HTTP session
 class Subdomain_enumerator:
     def __init__(self, url,
                     success = [],
@@ -65,8 +71,10 @@ class Subdomain_enumerator:
         self.not_found = not_found
         self.dns_failures = dns_failures
 
+
+    # Method to test if the domain uses wildcard DNS by generating fake subdomains
     async def check_wildcards(self, session): #This will first try random subdomains to see if site has wildcards protection
-        wildcards = ["dGhpc3Nob3VsZG5vdGV4aXN0", "d2h5d291bGR5b3VkZWNvZGV0aGlz", "SmVzdXNsb3Zlc3lvdQ=="] 
+        wildcards = ["dGhpc3Nob3VsZG5vdGV4aXN0", "d2h5d291bGR5eW91ZGVjb2RldGhpcw==", "SmVzdXNsb3Zlc3lvdQ=="] 
         async with limit:
             try:
                 false_positives = 0
@@ -79,7 +87,7 @@ class Subdomain_enumerator:
                             false_positives += 1
 
                 if false_positives == 3:
-                    print(f"{Fore.RED}{domain} uses DNS wildcards protection. Subdomain enumeration is pointless :(")
+                    print(f"{Fore.RED}[!] {self.url} uses DNS wildcards protection. Subdomain enumeration is pointless :({Style.RESET_ALL}")
                     sys.exit()
                 else:
                     print(f"{Fore.GREEN}Service has no wildcard block! Proceeding enumeration...{Style.RESET_ALL}")
@@ -88,10 +96,12 @@ class Subdomain_enumerator:
             except aiohttp.client_exceptions.ClientConnectionError:
                 pass
             except TimeoutError:
-                print(f"{Fore.CYAN}Did you mess with config file?{Style.RESET_ALL}")
+                print(f"{Fore.CYAN}[i] Did you mess with config file?{Style.RESET_ALL}")
 
  
 #Fetching subdomains
+
+    # Method to send requests to subdomains and categorize the responses based on status code
     async def fetch(self, url, session):
 
 
@@ -125,26 +135,28 @@ class Subdomain_enumerator:
         except asyncio.TimeoutError:
             self.dns_failures += 1
         except Exception as e:
-            print(f"{Fore.MAGENTA}[ERROR] {url} — {e}{Style.RESET_ALL}")
+            print(f"{Fore.RED}[!] Subdomain Enumerator Error: {e}{Style.RESET_ALL}")
             self.dns_failures += 1
         except TimeoutError:
-            print(f"{Fore.RED}Did you mess with config file?{Style.RESET_ALL}")
+            print(f"{Fore.CYAN}[i] Did you mess with config file?{Style.RESET_ALL}")
         except ConnectionResetError:
-            print(f"{Fore.RED}Connection reset by peer{Style.RESET_ALL}")
+            print(f"{Fore.YELLOW}[x] Connection reset by peer{Style.RESET_ALL}")
 
 
 
     
 
+
+    # Main routine to load subdomain wordlist, check wildcards, and launch scanning in batches
     async def main(self):
         wordlist_path = "subdomains/" + str(settings.get('subdomain_wordlist'))
         if not wordlist_path:
-            print(f"{Fore.RED}No wordlist path set in config!{Style.RESET_ALL}")
+            print(f"{Fore.RED}[!] No wordlist path set in config!{Style.RESET_ALL}")
             return
         if not os.path.isabs(wordlist_path):
             wordlist_path = os.path.join(enumerator_dir, wordlist_path)
         if not os.path.isfile(wordlist_path):
-            print(f"{Fore.RED}Wordlist file not found: {wordlist_path}{Style.RESET_ALL}")
+            print(f"{Fore.RED}[!] Wordlist file not found: {wordlist_path}{Style.RESET_ALL}")
             return
 
         connector = aiohttp.TCPConnector(limit=100, force_close=True)
@@ -175,9 +187,11 @@ class Subdomain_enumerator:
                 print(f"{Fore.RED}{self.not_found} Not found (404){Style.RESET_ALL}")
                 print(f"{Fore.LIGHTBLACK_EX}{self.dns_failures} DNS/Timeout failures{Style.RESET_ALL}")
             except Exception as e:
-                print(f"{Fore.RED}[ERROR]: Unknown error has occured{Style.RESET_ALL}")
+                print(f"{Fore.RED}[!] Subdomain Enumerator Error: {e}{Style.RESET_ALL}")
 
 
+
+# Class for performing directory/path enumeration using an async HTTP session
 class Path_enumerator:
     def __init__(self, url,
                 success = [],
@@ -199,6 +213,8 @@ class Path_enumerator:
 
 #Fetching paths
 
+
+    # Method to send requests to subdomains and categorize the responses based on status code
     async def fetch(self, url, session):
         fake_path = "/theresnochancethispathexists321123"
 
@@ -241,23 +257,25 @@ class Path_enumerator:
         except asyncio.TimeoutError:
             self.dns_failures += 1
         except Exception as e:
-            print(f"{Fore.MAGENTA}[ERROR] {url} — {e}{Style.RESET_ALL}")
+            print(f"{Fore.RED}[!] Path Enumerator Error: {e}{Style.RESET_ALL}")
             self.dns_failures += 1
         except TimeoutError:
-            print(f"{Fore.RED}Did you mess with config file?{Style.RESET_ALL}")
+            print(f"{Fore.CYAN}[i] Did you mess with config file?{Style.RESET_ALL}")
         except ConnectionResetError:
-            print(f"{Fore.RED}Connection reset by peer{Style.RESET_ALL}")
+            print(f"{Fore.YELLOW}[x] Connection reset by peer{Style.RESET_ALL}")
 
 
+
+    # Main routine to load subdomain wordlist, check wildcards, and launch scanning in batches
     async def main(self):
         wordlist_path = "paths/" + str(settings.get('paths_wordlist'))
         if not wordlist_path:
-            print(f"{Fore.RED}No wordlist path set in config!{Style.RESET_ALL}")
+            print(f"{Fore.RED}[!] No wordlist path set in config!{Style.RESET_ALL}")
             return
         if not os.path.isabs(wordlist_path):
             wordlist_path = os.path.join(enumerator_dir, wordlist_path)
         if not os.path.isfile(wordlist_path):
-            print(f"{Fore.RED}Wordlist file not found: {wordlist_path}{Style.RESET_ALL}")
+            print(f"{Fore.RED}[!] Wordlist file not found: {wordlist_path}{Style.RESET_ALL}")
             return
 
         connector = aiohttp.TCPConnector(limit=100, force_close=True)
@@ -287,11 +305,15 @@ class Path_enumerator:
                 print(f"{Fore.RED}{self.not_found} Not found (404){Style.RESET_ALL}")
                 print(f"{Fore.LIGHTBLACK_EX}{self.dns_failures} DNS/Timeout failures{Style.RESET_ALL}")
             except Exception as e:
-                print(f"{Fore.RED}[ERROR]: Unknown error has occured{Style.RESET_ALL}")
+                print(f"{Fore.RED}[!] Path Enumerator Error: {e}{Style.RESET_ALL}")
 
 
+
+# Helper function to run any async coroutine while suppressing SSL errors cleanly
 def run_with_handler(coro):
     loop = asyncio.new_event_loop()
+
+# Function to suppress SSL errors related to aiohttp connections (like APPLICATION_DATA_AFTER_CLOSE_NOTIFY)
     loop.set_exception_handler(silence_ssl_error)
     asyncio.set_event_loop(loop)
     try:
@@ -301,51 +323,53 @@ def run_with_handler(coro):
 
 #Choosing between subdomain enumerator and path enumerator
 
-def tool():
+def subdomain_enum():
+    global domain
+    print("-" * 50)
+    print(f"{Fore.CYAN}[i]{Style.RESET_ALL} Using subdomain wordlist from config: {settings.get('subdomain_wordlist')}")
+    print(f"{Fore.LIGHTBLACK_EX}Edit 'config.txt' to change the wordlist path.{Style.RESET_ALL}")
+    print("-" * 50)
     try:
+        domain = input("Enter the root domain (e.g google.com): ").strip().lower()
+        if domain.startswith("http://"):
+            domain = domain[7:]
+        elif domain.startswith("https://"):
+            domain = domain[8:]
+        subdomain_enumerator_instance = Subdomain_enumerator(url=domain)  
 
-        print("Pick your mode\n 1. Subdomain enumerator\n 2. Path enumerator ")
-        mode = input()
-        global domain
-        if mode == "1" or mode.lower() == "subdomain enumerator":
-            print("-" * 50)
-            print(f"{Fore.CYAN}[i]{Style.RESET_ALL} Using subdomain wordlist from config: {settings.get('subdomain_wordlist')}")
-            print(f"{Fore.LIGHTBLACK_EX}Edit 'config.txt' to change the wordlist path.{Style.RESET_ALL}")
-            print("-" * 50)
-            try:
-                domain = input("Enter the root domain (e.g google.com): ").strip().lower()
-                if domain.startswith("http://"):
-                    domain = domain[7:]
-                elif domain.startswith("https://"):
-                    domain = domain[8:]
-                subdomain_enumerator_instance = Subdomain_enumerator(url=domain)  
-
-                run_with_handler(subdomain_enumerator_instance.main())   
-            except KeyboardInterrupt:
-                print("\nShutting down")
-        elif mode == "2" or mode.lower() == "path enumerator":
-            
-            print("-" * 50)
-            print(f"{Fore.CYAN}[i]{Style.RESET_ALL} Using path wordlist from config: {settings.get('paths_wordlist')}")
-            print(f"{Fore.LIGHTBLACK_EX}Edit 'config.txt' to change the wordlist path.{Style.RESET_ALL}")
-            print("-" * 50)
-            try:
-                domain = input("Enter the root domain (e.g google.com): ").strip().lower()
-                if domain.startswith("http://"):
-                    domain = domain[7:]
-                elif domain.startswith("https://"):
-                    domain = domain[8:]
-                path_enumerator_instance = Path_enumerator(url=domain)  
-
-                run_with_handler(path_enumerator_instance.main())   
-        
-            except KeyboardInterrupt:
-                print("\nShutting down")
+        run_with_handler(subdomain_enumerator_instance.main())   
     except KeyboardInterrupt:
-        print("Shutting down")
+        print(f"{Fore.YELLOW}[x] Interrupted by user. Shutting down...{Style.RESET_ALL}")
+
+def directory_brute_force():
+    print("-" * 50)
+    print(f"{Fore.CYAN}[i]{Style.RESET_ALL} Using path wordlist from config: {settings.get('paths_wordlist')}")
+    print(f"{Fore.LIGHTBLACK_EX}Edit 'config.txt' to change the wordlist path.{Style.RESET_ALL}")
+    print("-" * 50)
+    try:
+        domain = input("Enter the root domain (e.g google.com): ").strip().lower()
+        if domain.startswith("http://"):
+            domain = domain[7:]
+        elif domain.startswith("https://"):
+            domain = domain[8:]
+        path_enumerator_instance = Path_enumerator(url=domain)  
+
+        run_with_handler(path_enumerator_instance.main())   
+
+    except KeyboardInterrupt:
+        print(f"{Fore.YELLOW}[x] Interrupted by user. Shutting down...{Style.RESET_ALL}")
 
 
+
+# Entry point if this script is executed directly (not imported as a module)
 if __name__ == "__main__":
-    tool()
-
-
+    try:
+        mode = (input("Pick your mode\n 1. Subdomain enumerator\n 2. Directory Brute-Forcer \n "))
+        if mode.strip() == "1":
+            subdomain_enum()
+        elif mode.strip() == "2":
+            directory_brute_force()
+        else:
+            print(f"{Fore.YELLOW}[?] Invalid mode selected.{Style.RESET_ALL}")
+    except KeyboardInterrupt:
+        print(f"{Fore.YELLOW}[x] Interrupted by user. Shutting down...{Style.RESET_ALL}")
