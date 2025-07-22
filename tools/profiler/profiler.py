@@ -1,3 +1,5 @@
+import builtins
+print = builtins.print
 import whois
 from colorama import Fore, Style
 import dns.resolver
@@ -107,74 +109,71 @@ class Profiler:
 
     def result(self):
         try:
-            print(f"\n{Fore.LIGHTCYAN_EX}=== Domain WHOIS information ==={Style.RESET_ALL}")
-            print(f"{Fore.BLUE}Domain Information{Style.RESET_ALL}")
+            print(f"\n{Fore.LIGHTCYAN_EX}=== Domain WHOIS information ==={Style.RESET_ALL}", log=True)
+            print(f"{Fore.BLUE}Domain Information{Style.RESET_ALL}", log=True)
             for i in self.domain_info:
                 if self.domain_info[i]:
-                    print(f"  {i.capitalize()}: {self.domain_info[i]}")
+                    print(f"  {i.capitalize()}: {self.domain_info[i]}", log=True)
 
-            print(f"\n{Fore.YELLOW}Dates{Style.RESET_ALL}")
+            print(f"\n{Fore.YELLOW}Dates{Style.RESET_ALL}", log=True)
             for i in self.dates:
                 if self.dates[i]:
-                    print(f"  {i.capitalize()}: {self.dates[i]}")
+                    print(f"  {i.capitalize()}: {self.dates[i]}", log=True)
 
             if self.name_servers:
-                print(f"\n{Fore.GREEN}Name Servers{Style.RESET_ALL}")
+                print(f"\n{Fore.GREEN}Name Servers{Style.RESET_ALL}", log=True)
                 for ns in self.name_servers:
-                    print(f"  - {ns}")
+                    print(f"  - {ns}", log=True)
 
-            print(f"\n{Fore.GREEN}Contact Info{Style.RESET_ALL}")
+            print(f"\n{Fore.GREEN}Contact Info{Style.RESET_ALL}", log=True)
             for i in self.contact:
                 if self.contact[i]:
                     if isinstance(self.contact[i], list):
                         for item in self.contact[i]:
-                            print(f"  {i.capitalize()}: {item}")
+                            print(f"  {i.capitalize()}: {item}", log=True)
                     else:
-                        print(f"  {i.capitalize()}: {self.contact[i]}")
+                        print(f"  {i.capitalize()}: {self.contact[i]}", log=True)
 
             if self.security:
-                print(f"\n{Fore.RED}DNS Security{Style.RESET_ALL}")
-                print(f"  DNSSEC: {self.security}")
+                print(f"\n{Fore.RED}DNS Security{Style.RESET_ALL}", log=True)
+                print(f"  DNSSEC: {self.security}", log=True)
 
             filtered = {i: self.additional_info[i] for i in self.additional_info if self.additional_info[i]}
             if filtered:
-                print(f"\n{Fore.LIGHTBLACK_EX}Additional Info{Style.RESET_ALL}")
+                print(f"\n{Fore.LIGHTBLACK_EX}Additional Info{Style.RESET_ALL}", log=True)
                 for i in filtered:
                     if isinstance(filtered[i], list):
                         for item in filtered[i]:
-                            print(f"  {i.capitalize()}: {item}")
+                            print(f"  {i.capitalize()}: {item}", log=True)
                     else:
-                        print(f"  {i.capitalize()}: {filtered[i]}")
+                        print(f"  {i.capitalize()}: {filtered[i]}", log=True)
 
-            print(f"\n{Fore.CYAN}=== IP WHOIS Information ==={Style.RESET_ALL}")
+            print(f"\n{Fore.CYAN}=== IP WHOIS Information ==={Style.RESET_ALL}", log=True)
             for ip, info in self.ip_whois.items():
-                print(f"\n  {ip}:")
+                print(f"\n  {ip}:", log=True)
                 if info:
                     for key, value in info.items():
-                        print(f"    {key.capitalize()}: {value}")
+                        print(f"    {key.capitalize()}: {value}", log=True)
                 else:
-                    print("    No WHOIS data found.")
+                    print("    No WHOIS data found.", log=True)
 
-            print(f"\n{Fore.LIGHTCYAN_EX}=== Resolved DNS Information ==={Style.RESET_ALL}")
+            print(f"\n{Fore.LIGHTCYAN_EX}=== Resolved DNS Information ==={Style.RESET_ALL}", log=True)
             for rtype, info in self.results.items():
                 description = self.record_types.get(rtype, "")
                 if info:
-                    print(f"{Fore.YELLOW} \n{rtype} Records: - {description}{Style.RESET_ALL}")
+                    print(f"{Fore.YELLOW} \n{rtype} Records: - {description}{Style.RESET_ALL}", log=True)
                     for r in info:
-                        print(f" - {r}")
+                        print(f" - {r}", log=True)
 
-            print(f"\n{Fore.LIGHTCYAN_EX}=== Reversed DNS information ==={Style.RESET_ALL}")
+            print(f"\n{Fore.LIGHTCYAN_EX}=== Reversed DNS information ==={Style.RESET_ALL}", log=True)
             for ip, host in self.reversed_dns:
                 if host:
-                    print(f"  {ip} → {host}")
+                    print(f"  {ip} → {host}", log=True)
                 else:
-                    print(f"  {ip} → No reverse DNS found")
+                    print(f"  {ip} → No reverse DNS found", log=True)
 
         except Exception as e:
             print(f"{Fore.RED}[!] Error printing results: {e}{Style.RESET_ALL}")
-
-      
-
 
 if __name__ == "__main__":
     try:

@@ -54,3 +54,10 @@ test.py
 tests/
 __tests__/
 
+# Ignore entire results folder
+/results/
+
+# Just in case someone moved or renamed the results dir
+INSPECTOR_RESULTS_*.txt
+**/INSPECTOR_RESULTS_*.txt
+

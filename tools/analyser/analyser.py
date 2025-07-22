@@ -1,3 +1,5 @@
+import builtins
+print = builtins.print
 from colorama import Fore, Style
 import requests
 import datetime
@@ -41,7 +43,7 @@ class HashScanner(MalwareAnalyser):
     # Checks if the hash format matches bcrypt pattern (60 characters with $2a$, $2b$, $2y$)
     def bcrypt_check(self):
         if self.h_value.startswith(("$2a$", "$2b$", "$2y$")) and len(self.h_value) == 60:
-            print(f"{Fore.BLUE}Provided hash is bcrypt{Style.RESET_ALL}")
+            print(f"{Fore.BLUE}Provided hash is bcrypt{Style.RESET_ALL}", log=True)
         else:
             self.fail += 1
 
@@ -50,11 +52,11 @@ class HashScanner(MalwareAnalyser):
     def md5_ntlm_check(self):
         if len(self.h_value) == 32 and all(c in "0123456789abcdefABCDEF" for c in self.h_value):
             if self.h_value.isupper():
-                print(f"{Fore.BLUE}Likely NTLM (uppercase hex){Style.RESET_ALL}")
+                print(f"{Fore.BLUE}Likely NTLM (uppercase hex){Style.RESET_ALL}", log=True)
             elif self.h_value.islower():
-                print(f"{Fore.BLUE}Likely MD5 (lowercase hex){Style.RESET_ALL}")
+                print(f"{Fore.BLUE}Likely MD5 (lowercase hex){Style.RESET_ALL}", log=True)
             else:
-                print(f"{Fore.BLUE}Could be either MD5 or NTLM — indistinguishable without context.{Style.RESET_ALL}")
+                print(f"{Fore.BLUE}Could be either MD5 or NTLM — indistinguishable without context.{Style.RESET_ALL}", log=True)
         else:
             self.fail += 1
 
@@ -62,11 +64,11 @@ class HashScanner(MalwareAnalyser):
     # Detects SHA1, SHA256, SHA512 based on hash length and format
     def sha_check(self):
         if len(self.h_value) == 40 and all(c in "0123456789abcdefABCDEF" for c in self.h_value):
-            print(f"{Fore.BLUE}The hash you provided is likely SHA1 (or possibly RIPEMD-160){Style.RESET_ALL}")
+            print(f"{Fore.BLUE}The hash you provided is likely SHA1 (or possibly RIPEMD-160){Style.RESET_ALL}", log=True)
         elif len(self.h_value) == 64 and all(c in "0123456789abcdefABCDEF" for c in self.h_value):
-            print(f"{Fore.BLUE}The hash you provided is likely SHA256 (possibly SHA3-256, indistinguishable without context){Style.RESET_ALL}")
+            print(f"{Fore.BLUE}The hash you provided is likely SHA256 (possibly SHA3-256, indistinguishable without context){Style.RESET_ALL}", log=True)
         elif len(self.h_value) == 128 and all(c in "0123456789abcdefABCDEF" for c in self.h_value):
-            print(f"{Fore.BLUE}The hash you provided is likely SHA512{Style.RESET_ALL}")
+            print(f"{Fore.BLUE}The hash you provided is likely SHA512{Style.RESET_ALL}", log=True)
         else:
             self.fail += 1
 
@@ -76,7 +78,7 @@ class HashScanner(MalwareAnalyser):
         if len(self.h_value) == 41 and self.h_value.startswith("*"):
             body = self.h_value[1:]
             if all(c in "0123456789ABCDEF" for c in body):
-                print(f"{Fore.BLUE}The hash you provided is likely MySQL 5.x{Style.RESET_ALL}")
+                print(f"{Fore.BLUE}The hash you provided is likely MySQL 5.x{Style.RESET_ALL}", log=True)
             else:
                 self.fail += 1
         else:
@@ -86,7 +88,7 @@ class HashScanner(MalwareAnalyser):
     # Identifies simple 8-character CRC32 hashes
     def crc32_check(self):
         if len(self.h_value) == 8 and all(c in "0123456789abcdefABCDEF" for c in self.h_value):
-            print(f"{Fore.BLUE}The hash you provided is likely CRC32 (non-cryptographic){Style.RESET_ALL}")
+            print(f"{Fore.BLUE}The hash you provided is likely CRC32 (non-cryptographic){Style.RESET_ALL}", log=True)
         else:
             self.fail += 1
 
@@ -95,7 +97,7 @@ class HashScanner(MalwareAnalyser):
     # Sends a VirusTotal API request to fetch full analysis report for a hash
     def vt_lookup(self, hash_value):
         if not self.api_key:
-            print(f"{Fore.RED}[VT] API key not found. Please set it in config/keys.txt{Style.RESET_ALL}")
+            print(f"{Fore.RED}[VT] API key not found. Please set it in config/keys.txt{Style.RESET_ALL}", log=True)
             return
 
         headers = {
@@ -104,7 +106,7 @@ class HashScanner(MalwareAnalyser):
         url = f"https://www.virustotal.com/api/v3/files/{hash_value}"
 
         try:
-            print(f"{Fore.LIGHTBLACK_EX}Querying VirusTotal...{Style.RESET_ALL}")
+            print(f"{Fore.LIGHTBLACK_EX}Querying VirusTotal...{Style.RESET_ALL}", log=True)
             response = requests.get(url, headers=headers)
             if response.status_code == 200:
                 data = response.json()["data"]["attributes"]
@@ -131,23 +133,23 @@ class HashScanner(MalwareAnalyser):
                 malware_labels = list(malware_labels)[:5]  # limit to top 5 unique labels
 
                 # Print full report
-                print(f"{Fore.YELLOW}\n[+] VT Detection: {malicious}/{total} engines flagged this file")
-                print(f"[+] First Submission: {sub_date}")
-                print(f"[+] Malware Labels:")
+                print(f"{Fore.YELLOW}\n[+] VT Detection: {malicious}/{total} engines flagged this file", log=True)
+                print(f"[+] First Submission: {sub_date}", log=True)
+                print(f"[+] Malware Labels:", log=True)
                 if malware_labels:
                     for label in malware_labels:
-                        print(f"    - {label}")
+                        print(f"    - {label}", log=True)
                 else:
-                    print("    - None provided by engines")
-                print(f"[+] Report: https://www.virustotal.com/gui/file/{hash_value}{Style.RESET_ALL}\n")
+                    print("    - None provided by engines", log=True)
+                print(f"[+] Report: https://www.virustotal.com/gui/file/{hash_value}{Style.RESET_ALL}\n", log=True)
 
             elif response.status_code == 404:
-                print(f"{Fore.CYAN}[VT] Hash not found on VirusTotal.{Style.RESET_ALL}")
+                print(f"{Fore.CYAN}[VT] Hash not found on VirusTotal.{Style.RESET_ALL}", log=True)
             else:
-                print(f"{Fore.RED}[VT] Error {response.status_code}: {response.text}{Style.RESET_ALL}")
+                print(f"{Fore.RED}[VT] Error {response.status_code}: {response.text}{Style.RESET_ALL}", log=True)
 
         except Exception as e:
-            print(f"{Fore.RED}[VT] Exception: {e}{Style.RESET_ALL}")
+            print(f"{Fore.RED}[VT] Exception: {e}{Style.RESET_ALL}", log=True)
 
     # Entry point for hash scanning: checks format, then fetches VT report if recognized
     def start(self):
@@ -155,7 +157,7 @@ class HashScanner(MalwareAnalyser):
             while True:
                 
                 if not self.h_value:
-                    print(f"{Fore.RED}[!] Hash cannot be empty. Try again.{Style.RESET_ALL}")
+                    print(f"{Fore.RED}[!] Hash cannot be empty. Try again.{Style.RESET_ALL}", log=True)
                     continue
                 self.fail = 0  
                 self.bcrypt_check()
@@ -167,11 +169,11 @@ class HashScanner(MalwareAnalyser):
                     self.vt_lookup(self.h_value)
                     break 
                 else:
-                    print(f"{Fore.RED}[!] Unrecognized hash. Please try again.{Style.RESET_ALL}")
+                    print(f"{Fore.RED}[!] Unrecognized hash. Please try again.{Style.RESET_ALL}", log=True)
         except KeyboardInterrupt:
-            print(f"{Fore.YELLOW}[x] Scan cancelled by user.{Style.RESET_ALL}")
+            print(f"{Fore.YELLOW}[x] Scan cancelled by user.{Style.RESET_ALL}", log=True)
         except Exception as e:
-            print(f"{Fore.RED}[!] An unexpected error occurred: {e}{Style.RESET_ALL}")
+            print(f"{Fore.RED}[!] An unexpected error occurred: {e}{Style.RESET_ALL}", log=True)
 
 
 
@@ -186,7 +188,7 @@ class UrlAnalyser(MalwareAnalyser):
     # Queries VirusTotal for URL analysis — falls back to submission if URL is unknown
     def vt_url_lookup(self):
         if not self.api_key:
-            print(f"{Fore.RED}[VT] API key not found. Please set it in config/keys.txt{Style.RESET_ALL}")
+            print(f"{Fore.RED}[VT] API key not found. Please set it in config/keys.txt{Style.RESET_ALL}", log=True)
             return
 
         headers = {
@@ -220,25 +222,25 @@ class UrlAnalyser(MalwareAnalyser):
                 malware_labels = list(malware_labels)[:5]
 
                 # Print full report
-                print(f"{Fore.YELLOW}\n[+] VT Detection: {malicious}/{total} engines flagged this URL")
-                print(f"[+] First Submission: {sub_date}")
-                print(f"[+] Malware Labels:")
+                print(f"{Fore.YELLOW}\n[+] VT Detection: {malicious}/{total} engines flagged this URL", log=True)
+                print(f"[+] First Submission: {sub_date}", log=True)
+                print(f"[+] Malware Labels:", log=True)
                 if malware_labels:
                     for label in malware_labels:
-                        print(f"    - {label}")
+                        print(f"    - {label}", log=True)
                 else:
-                    print("    - None provided by engines")
-                print(f"[+] Report: https://www.virustotal.com/gui/url/{response.json()['data']['id']}{Style.RESET_ALL}\n")
+                    print("    - None provided by engines", log=True)
+                print(f"[+] Report: https://www.virustotal.com/gui/url/{response.json()['data']['id']}{Style.RESET_ALL}\n", log=True)
 
 
             elif response.status_code == 404:
-                print(f"{Fore.CYAN}[VT] URL not found. Submitting now...{Style.RESET_ALL}")
+                print(f"{Fore.CYAN}[VT] URL not found. Submitting now...{Style.RESET_ALL}", log=True)
                 self.vt_url_submit()
             else:
-                print(f"{Fore.RED}[VT] Error {response.status_code}: {response.text}{Style.RESET_ALL}")
+                print(f"{Fore.RED}[VT] Error {response.status_code}: {response.text}{Style.RESET_ALL}", log=True)
 
         except Exception as e:
-            print(f"{Fore.RED}[VT] Lookup error: {e}{Style.RESET_ALL}")
+            print(f"{Fore.RED}[VT] Lookup error: {e}{Style.RESET_ALL}", log=True)
 
 
     # Submits a new URL to VirusTotal for analysis when it hasn't been seen before
@@ -253,12 +255,12 @@ class UrlAnalyser(MalwareAnalyser):
             response = requests.post(url, headers=headers, data=f"url={self.raw_url}")
             if response.status_code == 200:
                 data = response.json()["data"]
-                print(f"{Fore.GREEN}[+] URL submitted for scanning.")
-                print(f"[+] GUI link: https://www.virustotal.com/gui/url/{data['id']}{Style.RESET_ALL}")
+                print(f"{Fore.GREEN}[+] URL submitted for scanning.", log=True)
+                print(f"[+] GUI link: https://www.virustotal.com/gui/url/{data['id']}{Style.RESET_ALL}", log=True)
             else:
-                print(f"{Fore.RED}[VT] Submission failed: {response.status_code} — {response.text}{Style.RESET_ALL}")
+                print(f"{Fore.RED}[VT] Submission failed: {response.status_code} — {response.text}{Style.RESET_ALL}", log=True)
         except Exception as e:
-            print(f"{Fore.RED}[VT] URL submit error: {e}{Style.RESET_ALL}")
+            print(f"{Fore.RED}[VT] URL submit error: {e}{Style.RESET_ALL}", log=True)
 
 
 
@@ -272,11 +274,11 @@ class FileAnalyser(MalwareAnalyser):
     # Uploads the file to VirusTotal and waits for it to be analyzed
     def vt_file_scan(self):
         if not self.api_key:
-            print(f"{Fore.RED}[VT] API key not found. Please set it in config/keys.txt{Style.RESET_ALL}")
+            print(f"{Fore.RED}[VT] API key not found. Please set it in config/keys.txt{Style.RESET_ALL}", log=True)
             return
 
         if not os.path.isfile(self.file_path):
-            print(f"{Fore.RED}[!] File not found: {self.file_path}{Style.RESET_ALL}")
+            print(f"{Fore.RED}[!] File not found: {self.file_path}{Style.RESET_ALL}", log=True)
             return
 
         headers = {"x-apikey": self.api_key}
@@ -284,25 +286,25 @@ class FileAnalyser(MalwareAnalyser):
         try:
             with open(self.file_path, "rb") as f:
                 files = {"file": (os.path.basename(self.file_path), f)}
-                print(f"{Fore.LIGHTBLACK_EX}Uploading file to VirusTotal...{Style.RESET_ALL}")
+                print(f"{Fore.LIGHTBLACK_EX}Uploading file to VirusTotal...{Style.RESET_ALL}", log=True)
                 response = requests.post("https://www.virustotal.com/api/v3/files", headers=headers, files=files)
 
             if response.status_code == 200:
                 upload_data = response.json()["data"]
                 analysis_id = upload_data["id"]
                 file_sha256 = self.calculate_sha256()  # fallback if available
-                print(f"{Fore.GREEN}[+] File uploaded. Waiting for analysis...{Style.RESET_ALL}")
+                print(f"{Fore.GREEN}[+] File uploaded. Waiting for analysis...{Style.RESET_ALL}", log=True)
                 self.wait_for_report(analysis_id, headers, fallback_sha=file_sha256)
 
             elif response.status_code == 409:
                 file_id = response.json()["error"]["message"].split()[-1]
-                print(f"{Fore.YELLOW}[VT] File already exists. Fetching report...{Style.RESET_ALL}")
+                print(f"{Fore.YELLOW}[VT] File already exists. Fetching report...{Style.RESET_ALL}", log=True)
                 self.fetch_final_file_report(file_id, headers)
 
             else:
-                print(f"{Fore.RED}[VT] Submission failed: {response.status_code} — {response.text}{Style.RESET_ALL}")
+                print(f"{Fore.RED}[VT] Submission failed: {response.status_code} — {response.text}{Style.RESET_ALL}", log=True)
         except Exception as e:
-            print(f"{Fore.RED}[VT] File scan error: {e}{Style.RESET_ALL}")
+            print(f"{Fore.RED}[VT] File scan error: {e}{Style.RESET_ALL}", log=True)
 
 
     # Polls the VT analysis endpoint until the file analysis is complete
@@ -318,21 +320,21 @@ class FileAnalyser(MalwareAnalyser):
                     status = data.get("attributes", {}).get("status")
 
                     if status != "completed":
-                        print(f"{Fore.LIGHTBLACK_EX}[!] Analysis in progress... waiting...{Style.RESET_ALL}")
+                        print(f"{Fore.LIGHTBLACK_EX}[!] Analysis in progress... waiting...{Style.RESET_ALL}", log=True)
                         continue
                     else:
                         # Try to get SHA256 from meta
                         file_sha = data.get("meta", {}).get("file_info", {}).get("sha256") or fallback_sha
                         if not file_sha:
-                            print(f"{Fore.RED}[!] Couldn't determine file SHA256 to fetch full report.{Style.RESET_ALL}")
+                            print(f"{Fore.RED}[!] Couldn't determine file SHA256 to fetch full report.{Style.RESET_ALL}", log=True)
                             return
                         self.fetch_final_file_report(file_sha, headers)
                         break
 
                 else:
-                    print(f"{Fore.RED}[!] Error fetching analysis status: {response.status_code} — {response.text}{Style.RESET_ALL}")
+                    print(f"{Fore.RED}[!] Error fetching analysis status: {response.status_code} — {response.text}{Style.RESET_ALL}", log=True)
         except KeyboardInterrupt:
-            print(f"{Fore.YELLOW}[x] Scan interrupted by user.{Style.RESET_ALL}")
+            print(f"{Fore.YELLOW}[x] Scan interrupted by user.{Style.RESET_ALL}", log=True)
 
 
     # Retrieves the final detailed report for a scanned file
@@ -340,7 +342,7 @@ class FileAnalyser(MalwareAnalyser):
         url = f"https://www.virustotal.com/api/v3/files/{file_id}"
         response = requests.get(url, headers=headers)
         if response.status_code != 200:
-            print(f"{Fore.RED}[!] Error fetching final report: {response.status_code}{Style.RESET_ALL}")
+            print(f"{Fore.RED}[!] Error fetching final report: {response.status_code}{Style.RESET_ALL}", log=True)
             return
 
         attributes = response.json()["data"]["attributes"]
@@ -361,15 +363,15 @@ class FileAnalyser(MalwareAnalyser):
                 malware_labels.add(engine["result"])
         malware_labels = list(malware_labels)[:5]
 
-        print(f"{Fore.YELLOW}\n[+] VT Detection: {malicious}/{total} engines flagged this file")
-        print(f"[+] First Submission: {sub_date}")
-        print(f"[+] Malware Labels:")
+        print(f"{Fore.YELLOW}\n[+] VT Detection: {malicious}/{total} engines flagged this file", log=True)
+        print(f"[+] First Submission: {sub_date}", log=True)
+        print(f"[+] Malware Labels:", log=True)
         if malware_labels:
             for label in malware_labels:
-                print(f"    - {label}")
+                print(f"    - {label}", log=True)
         else:
-            print("    - None provided by engines")
-        print(f"[+] Report: https://www.virustotal.com/gui/file/{file_id}{Style.RESET_ALL}\n")
+            print("    - None provided by engines", log=True)
+        print(f"[+] Report: https://www.virustotal.com/gui/file/{file_id}{Style.RESET_ALL}\n", log=True)
 
 
 
@@ -399,10 +401,10 @@ def check_vt_key_valid(api_key):
 def main():
     try:
         if not check_vt_key_valid(api_key=settings.get("VT_api_key", None)):
-            print(f"{Fore.RED}[!] Invalid VirusTotal API key. Please check config.txt{Style.RESET_ALL}")
+            print(f"{Fore.RED}[!] Invalid VirusTotal API key. Please check config.txt{Style.RESET_ALL}", log=True)
             sys.exit()
     except Exception:
-        print(f"{Fore.RED}[!] Unexpected error occurred.{Style.RESET_ALL}")
+        print(f"{Fore.RED}[!] Unexpected error occurred.{Style.RESET_ALL}", log=True)
 
 
     try:
@@ -418,9 +420,9 @@ def main():
             file_instance.vt_file_scan()
 
     except KeyboardInterrupt:
-        print(f"{Fore.YELLOW}[x] Interrupted by user. Shutting down...{Style.RESET_ALL}")
+        print(f"{Fore.YELLOW}[x] Interrupted by user. Shutting down...{Style.RESET_ALL}", log=True)
     except Exception:
-        print(f"{Fore.RED}[!] Unexpected error occurred.{Style.RESET_ALL}")
+        print(f"{Fore.RED}[!] Unexpected error occurred.{Style.RESET_ALL}", log=True)
 
 
 # Allows script to be executed directly from CLI
