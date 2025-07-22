@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.0 BETA] - 2025-07-23
+### Added
+- **Scan logging:** Inspector now logs all scans performed by the user. Each scan session is saved to a timestamped file in the `results` directory.
+- **Configurable logging:** Logging is enabled by default, but can be easily disabled by setting `logging_enabled=False` in `config.txt`.
+
+### Changed
+- File inspector.py got serious architechture changes.
+
 ## [0.4.3 BETA] - 2025-07-21
 ### Changed
 - Unified Enumerator and Profiler under a new menu category: **Recon & OSINT**

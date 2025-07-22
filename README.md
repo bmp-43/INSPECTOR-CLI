@@ -4,7 +4,7 @@ Inspector is a beginner-friendly cybersecurity toolkit designed to make common s
 
 ## Version
 
-**Current version:** 0.4.3 BETA
+**Current version:** 0.5.0 BETA
 
 ## Features
 
@@ -36,6 +36,8 @@ Inspector is a beginner-friendly cybersecurity toolkit designed to make common s
   <sub>*(since 0.4.3 BETA)*</sub>
 - 🎨 Consistent color-coded exception and info messages  
   <sub>*(since 0.4.3 BETA)*</sub>
+- 📝 **NEW: Scan Logging**  
+  <sub>*(since 0.5.0 BETA — Inspector now logs all scans performed by the user. Logging is enabled by default and can be easily disabled in `config.txt`.)*</sub>
 
 ## Current Toolset
 
@@ -61,8 +63,9 @@ Inspector is a beginner-friendly cybersecurity toolkit designed to make common s
     cd Inspector
     ```
 
-2. Make sure `config_inspector.txt` exists with values like:
+2. Make sure `config.txt` exists with values like:
     ```
+    logging_enabled=True
     timeout=0.7
     max_threads=100
     start_port=1
@@ -73,7 +76,7 @@ Inspector is a beginner-friendly cybersecurity toolkit designed to make common s
 
 4. Run the toolkit:
     ```bash
-    python3 inspector.py
+    python3 [inspector.py](http://_vscodecontentref_/0)
     ```
 
     - Select the tool you want to use (Port Scanner, Malware Analyser, or Recon & OSINT).
@@ -84,6 +87,7 @@ Inspector is a beginner-friendly cybersecurity toolkit designed to make common s
 
     > **Note:** All exception and status messages now use consistent prefixes and color coding for clarity.  
     > If you see threading-related warnings or tracebacks when exiting, this is a known Python 3.13 issue and does not affect Inspector's functionality.
+    > **NEW:** All scans are now logged by default. To disable logging, set `logging_enabled=False` in your `config.txt`.
 
 ## Folder Structure
 
@@ -99,6 +103,7 @@ The project folder structure was reorganized in 0.2.0 ALPHA for better modularit
 - [✓] IP WHOIS Lookup (added in 0.4.2 BETA)
 - [✓] Unified Recon & OSINT menu (since 0.4.3 BETA)
 - [✓] Consistent color-coded exception and info messages (since 0.4.3 BETA)
+- [✓] **Scan logging (since 0.5.0 BETA)**
 - Future: General Improvements and new tools
 
 ## License

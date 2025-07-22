@@ -59,7 +59,7 @@ def weapon():
     print(separators, log=True)
     ascii_banner = pyfiglet.figlet_format("INSPECTOR")
     print(f"{Fore.BLUE}{ascii_banner}", log=True)
-    print(f"Version 0.4.3 BETA{Style.RESET_ALL}", log=True)
+    print(f"Version 0.5.0 BETA{Style.RESET_ALL}", log=True)
     print(separators, log=True)
     if th_warning == False:
         main_launching()
