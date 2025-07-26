@@ -1,0 +1,7 @@
+requests
+colorama
+pyfiglet
+dnspython
+python-whois
+ipwhois
+aiohttp

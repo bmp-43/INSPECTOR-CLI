@@ -5,11 +5,14 @@ import re
 from datetime import datetime
 import pyfiglet
 from colorama import Fore, Style
-import os
 import sys
+import signal
+
 
 original_print = builtins.print
-
+output_file = None
+ansi_escape = re.compile(r'\x1B[@-_][0-?]*[ -/]*[@-~]')
+separators = f"{Fore.BLUE}-{Style.RESET_ALL}" * 50
 # Load config.txt values into a dictionary
 def config(filename):
     config = {}
@@ -29,11 +32,12 @@ if not os.path.isfile(config_path):
 
 # Load configuration values
 settings = config(config_path)
-
-#Decide if logging stays
 logging_state = str(settings.get("logging_enabled", "True"))
-# Initialize the PortScanner instance once
-th_warning = False
+
+
+
+# Prepare the tools, scanner instance and threading warning
+start = False
 def main_launching():
     global scanner, enumerator, analyser, profiler
     from tools.scanner import scanner
@@ -42,45 +46,144 @@ def main_launching():
     from tools.profiler import profiler
     global scanner_instance
     scanner_instance = scanner.PortScanner()
-    # Info message about threading-related warnings in Python 3.13
-    print(f"{Style.RESET_ALL}I would like to inform you that if you launch tools separately not as its intended random tracebacks may appear.\nIgnore it — Python 3.13 threading cleanup is noisy. Not your fault. And neither is mine :3{Fore.BLUE}")
-    global th_warning
-    th_warning = True
+    print(f"{Style.RESET_ALL}I would like to inform you that there might be some noise in the console when you run the scanner.\n Just be gentle when using ctrl + c on it or ignore it — Python 3.13 threading cleanup is noisy. Not your fault. And neither is mine :3{Fore.BLUE}")
+    global start
+    start = True
 
-
-
-
-# Main interactive menu
-def weapon():
-    # Separator line using blue dashes for consistent styling
-    separators = f"{Fore.BLUE}-{Style.RESET_ALL}" * 50
-
-    # Print ASCII banner and version
-    print(separators, log=True)
+def greating():
+    global separators
+    print(separators)
     ascii_banner = pyfiglet.figlet_format("INSPECTOR")
-    print(f"{Fore.BLUE}{ascii_banner}", log=True)
-    print(f"Version 0.5.0 BETA{Style.RESET_ALL}", log=True)
-    print(separators, log=True)
-    if th_warning == False:
+    print(f"{Fore.BLUE}{ascii_banner}")
+    print(f"Version 0.5.1 BETA{Style.RESET_ALL}")
+    print(separators)
+
+
+def log_creation():
+    global output_file
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    output_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), f"results/INSPECTOR_RESULTS_{timestamp}.txt")
+    os.makedirs(os.path.dirname(output_file_path), exist_ok=True)
+    output_file = open(output_file_path, "w", encoding="utf-8")
+    atexit.register(output_file.close)
+    builtins.print = custom_print_true
+    banner = pyfiglet.figlet_format("INSPECTOR")
+    output_file.write("-" * 50 + "\n")
+    output_file.write(banner)
+    output_file.write("Version 0.5.0 BETA\n")
+    output_file.write("-" * 50 + "\n\n")
+    output_file.flush()
+
+def custom_print_true(*args, **kwargs):
+    log = kwargs.pop("log", False)
+    original_print(*args, **kwargs)
+    if log and output_file:
+        text = ' '.join(str(arg) for arg in args)
+        cleaned = ansi_escape.sub('', text)
+        output_file.write(cleaned + '\n')
+        output_file.flush()
+
+def custom_print_false(*args, **kwargs):
+    kwargs.pop("log", None)
+    original_print(*args, **kwargs)
+
+if logging_state == "True":
+    builtins.print = custom_print_true
+else:
+    builtins.print = custom_print_false
+def weapon():
+    global separators
+    greating()
+    if not start:
         main_launching()
-    else:
-        pass
 
     print(separators)
-    mode = input(f"{Style.RESET_ALL}Pick the tool you wanna use: \n 1. Port Scanner\n 2. Malware Analyser \n 3. Recon & OSINT\n")
+    mode = input(f"{Style.RESET_ALL}Pick the tool you wanna use: \n 1. Port Scanner\n 2. Recon & OSINT\n 3. Full Reconnaissance Scan \n 4. Malware Analyser \n ")
     print(separators)
 
-    # Option 1 — Port Scanner
     if mode == "1" or mode.lower() == "port scanner":
+        if logging_state == "True":
+            log_creation()
         try:
-            scanner_instance.scan_port()
+            scanner_instance.scan_port(user_input=input("Enter IP or Domain of the target: "))
+
         except KeyboardInterrupt:
             print(f"{Fore.YELLOW}[x] Interrupted by user. Shutting down...{Style.RESET_ALL}")
         except Exception as e:
             print(f"{Fore.RED}[!] Port Scanner Error: {e}{Style.RESET_ALL}")
 
-    # Option 2 — Malware Analyser
-    elif mode == "2" or mode.lower() == "malware analyser":
+    elif mode == "2" or mode.lower() == "recon & osint":
+        if logging_state == "True":
+            log_creation()
+        try:
+            print(separators)
+            osint_tool = input("Pick your Recon tool \n 1. Subdomain Enumerator \n 2. Directory Brute-Forcer \n 3. DNS Profiler\n")
+            print(separators)
+
+            if osint_tool == "1" or osint_tool.lower() == "subdomain enumerator":
+                try:
+                    enumerator.subdomain_enum(domain_sub=input("Enter the root domain (e.g google.com): ").strip().lower())
+                except Exception as e:
+                    print(f"{Fore.RED}[!] Subdomain Enumerator Error: {e}{Style.RESET_ALL}")
+
+            elif osint_tool == "2" or osint_tool.lower() == "directory brute-forcer":
+                try:
+                    enumerator.directory_brute_force(domain_brute=input("Enter the root domain (e.g google.com): ").strip().lower())
+                except Exception as e:
+                    print(f"{Fore.RED}[!] Path Enumerator Error: {e}{Style.RESET_ALL}")
+
+            elif osint_tool == "3" or osint_tool.lower() == "dns profiler":
+                try:
+                    print(separators)
+                    initializator_profiler = profiler.Profiler(domain=input("Enter domain name: "))
+                    initializator_profiler.domain_lookup()
+                    initializator_profiler.dns_records_fetching()
+                    initializator_profiler.ip_lookup()
+                    initializator_profiler.reverse_dns()
+                    initializator_profiler.result()
+                except Exception as e:
+                    print(f"{Fore.RED}[!] Profiler Error: {e}{Style.RESET_ALL}")
+            else:
+                print(f"{Fore.YELLOW}[?] Invalid option selected.{Style.RESET_ALL}")
+
+        except KeyboardInterrupt:
+            print(f"{Fore.YELLOW}[x] Interrupted by user. Shutting down...{Style.RESET_ALL}")
+
+
+
+    elif mode == "3" or mode.lower() == "full reconnaissance scan":
+        if logging_state == "True":
+            log_creation()
+        print(separators)
+        print(f"{Fore.MAGENTA}This mode will perform full reconnaissance scan on the ip or domain, \nso it will take some time depending on your settings from config.txt{Style.RESET_ALL}")
+        proceed = input("Do you want to proceed? (y/n): ")
+        if proceed == "y":
+            full_scan_ip = input("Enter IP or Domain of the target: ")
+            print(f"Proceeding the scan...")
+            print(f"\n{separators}\n")
+            scanner_instance.scan_port(user_input=full_scan_ip)
+            print(f"\n{separators}\n")
+            enumerator.subdomain_enum(domain_sub=full_scan_ip)
+            print(f"\n{separators}\n")
+            enumerator.directory_brute_force(domain_brute=full_scan_ip)
+            print(f"\n{separators}\n")
+            initializator_profiler = profiler.Profiler(domain=full_scan_ip)
+            initializator_profiler.domain_lookup()
+            initializator_profiler.dns_records_fetching()
+            initializator_profiler.ip_lookup()
+            initializator_profiler.reverse_dns()
+            initializator_profiler.result()
+
+
+        elif proceed == "n":
+            return
+        else:
+            print(f"{Fore.YELLOW}[?] Invalid option selected.{Style.RESET_ALL}")
+
+
+    elif mode == "4" or mode.lower() == "malware analyser":
+        if logging_state == "True":
+            log_creation()
         try:
             print(f"{Fore.CYAN}[i]{Style.RESET_ALL} {Fore.LIGHTBLACK_EX}Note that Malware analyser uses VirusTotal API. Check the config.txt{Style.RESET_ALL}")
             print(separators)
@@ -89,93 +192,13 @@ def weapon():
             print(f"{Fore.YELLOW}[x] Interrupted by user. Shutting down...{Style.RESET_ALL}") 
         except Exception as e:
             print(f"{Fore.RED}[!] Malware Analyser Error: {e}{Style.RESET_ALL}")
-    
-    # Option 3 — Recon & OSINT Menu
-    elif mode == "3" or mode.lower() == "recon & osint":
-        try:
-            print(separators)
-            osint_tool = input("Pick your Recon tool \n 1. Subdomain Enumerator \n 2. Directory Brute-Forcer \n 3. DNS Profiler\n")
-            print(separators)
-
-            # Subdomain Enumerator
-            if osint_tool == "1" or osint_tool.lower() == "subdomain enumerator":
-                try:
-                    enumerator.subdomain_enum()
-                except Exception as e:
-                    print(f"{Fore.RED}[!] Subdomain Enumerator Error: {e}{Style.RESET_ALL}")
-
-            # Directory Brute-Forcer
-            elif osint_tool == "2" or osint_tool.lower() == "directory brute-forcer":
-                try:
-                    enumerator.directory_brute_force()
-                except Exception as e:
-                    print(f"{Fore.RED}[!] Path Enumerator Error: {e}{Style.RESET_ALL}")
-
-            # DNS Profiler
-            elif osint_tool == "3" or osint_tool.lower() == "dns profiler":
-                try:
-                    print(separators)
-                    initializator=profiler.Profiler(domain=input("Enter domain name: "))
-                    initializator.domain_lookup()
-                    initializator.dns_records_fetching()
-                    initializator.ip_lookup()
-                    initializator.reverse_dns()
-                    initializator.result()
-                except Exception as e:
-                    print(f"{Fore.RED}[!] Profiler Error: {e}{Style.RESET_ALL}")
-            
-            # Invalid tool selection
-            else:
-                print(f"{Fore.YELLOW}[?] Invalid option selected.{Style.RESET_ALL}")
-        except KeyboardInterrupt:
-            print(f"{Fore.YELLOW}[x] Interrupted by user. Shutting down...{Style.RESET_ALL}")   
-    
-    # Invalid main menu selection
     else:
-        print(f"{Fore.YELLOW}[?] Invalid option selected.{Style.RESET_ALL}")         
+        print(f"{Fore.YELLOW}[?] Invalid option selected.{Style.RESET_ALL}")
 
-logging_module = False
-def saving_prep():
-    global ansi_escape
-    ansi_escape = re.compile(r'\x1B[@-_][0-?]*[ -/]*[@-~]')
-    global original_print
-    # Save the original print
-    original_print = builtins.print
-    global logging_module
-    logging_module = True
 
-def custom_print_true(*args, **kwargs):
-    log = kwargs.pop("log", False)
-    original_print(*args, **kwargs)
-    if log:
-        text = ' '.join(str(arg) for arg in args)
-        cleaned = ansi_escape.sub('', text)
-        output_file.write(cleaned + '\n')
-        output_file.flush()
 
-def custom_print_false(*args, **kwargs):
-    # Remove 'log' if present, do nothing with it if logging is off
-    kwargs.pop("log", None)
-    original_print(*args, **kwargs)
-
-# Loop the tool selector until interrupted
 try:
     while True:
-        # Prepare output file
-        if logging_state == "True":
-            timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-            output_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), f"results/INSPECTOR_RESULTS_{timestamp}.txt")
-            os.makedirs(os.path.dirname(output_file_path), exist_ok=True)
-            output_file = open(output_file_path, "w", encoding="utf-8")
-        else:
-            pass
-        if logging_module == False and logging_state == "True":
-            saving_prep()
-            builtins.print = custom_print_true
-            # Ensure file gets closed
-            atexit.register(output_file.close)
-        else:
-            builtins.print = custom_print_false
         weapon()
 except KeyboardInterrupt:
     print(f"{Fore.YELLOW}[x] Interrupted by user. Shutting down...{Style.RESET_ALL}")

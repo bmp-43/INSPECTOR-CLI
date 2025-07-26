@@ -260,35 +260,32 @@ def run_with_handler(coro):
     finally:
         loop.close()
 
-def subdomain_enum():
-    global domain
+def subdomain_enum(domain_sub):
     print("-" * 50)
     print(f"{Fore.CYAN}[i]{Style.RESET_ALL} Using subdomain wordlist from config: {settings.get('subdomain_wordlist')}")
     print(f"{Fore.LIGHTBLACK_EX}Edit 'config.txt' to change the wordlist path.{Style.RESET_ALL}")
     print("-" * 50)
     try:
-        domain = input("Enter the root domain (e.g google.com): ").strip().lower()
-        if domain.startswith("http://"):
-            domain = domain[7:]
-        elif domain.startswith("https://"):
-            domain = domain[8:]
-        subdomain_enumerator_instance = Subdomain_enumerator(url=domain)  
+        if domain_sub.startswith("http://"):
+            domain_sub = domain_sub[7:]
+        elif domain_sub.startswith("https://"):
+            domain_sub = domain_sub[8:]
+        subdomain_enumerator_instance = Subdomain_enumerator(url=domain_sub)  
         run_with_handler(subdomain_enumerator_instance.main())   
     except KeyboardInterrupt:
         print(f"{Fore.YELLOW}[x] Interrupted by user. Shutting down...{Style.RESET_ALL}")
 
-def directory_brute_force():
+def directory_brute_force(domain_brute):
     print("-" * 50)
     print(f"{Fore.CYAN}[i]{Style.RESET_ALL} Using path wordlist from config: {settings.get('paths_wordlist')}")
     print(f"{Fore.LIGHTBLACK_EX}Edit 'config.txt' to change the wordlist path.{Style.RESET_ALL}")
     print("-" * 50)
     try:
-        domain = input("Enter the root domain (e.g google.com): ").strip().lower()
-        if domain.startswith("http://"):
-            domain = domain[7:]
-        elif domain.startswith("https://"):
-            domain = domain[8:]
-        path_enumerator_instance = Path_enumerator(url=domain)  
+        if domain_brute.startswith("http://"):
+            domain_brute = domain_brute[7:]
+        elif domain_brute.startswith("https://"):
+            domain_brute = domain_brute[8:]
+        path_enumerator_instance = Path_enumerator(url=domain_brute)  
         run_with_handler(path_enumerator_instance.main())   
     except KeyboardInterrupt:
         print(f"{Fore.YELLOW}[x] Interrupted by user. Shutting down...{Style.RESET_ALL}")
@@ -297,9 +294,9 @@ if __name__ == "__main__":
     try:
         mode = (input("Pick your mode\n 1. Subdomain enumerator\n 2. Directory Brute-Forcer \n "))
         if mode.strip() == "1":
-            subdomain_enum()
+            subdomain_enum(domain_sub=input("Enter the root domain (e.g google.com): ").strip().lower())
         elif mode.strip() == "2":
-            directory_brute_force()
+            directory_brute_force(domain_brute=input("Enter the root domain (e.g google.com): ").strip().lower())
         else:
             print(f"{Fore.YELLOW}[?] Invalid mode selected.{Style.RESET_ALL}")
     except KeyboardInterrupt:

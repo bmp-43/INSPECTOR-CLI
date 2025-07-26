@@ -7,14 +7,8 @@ import os
 import concurrent.futures
 from colorama import Fore, Style
 import ssl
-import atexit
-import threading
 
-# Prevent threading shutdown noise
-try:
-    atexit.unregister(threading._shutdown)
-except Exception:
-    pass
+
 
 # Reads configuration settings from the config.txt file
 def config(filename):
@@ -80,67 +74,90 @@ class PortScanner:
     def __init__(self, target=None, max_threads=int(settings.get("max_threads", 100))):
         self.target = target
         self.max_threads = max_threads
-
-    # FIXED: Properly pass user_input to both re.match() calls
-    def is_valid_input(self, user_input):
+        self.original_input = None
+    # FIXED: Properly pass self.original_input to both re.match() calls
+    def is_valid_input(self):
         ipv4_pattern = r"^\d{1,3}(\.\d{1,3}){3}$"
         hostname_pattern = r"^(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\.[A-Za-z]{2,})+$"
-        return bool(re.match(ipv4_pattern, user_input) or re.match(hostname_pattern, user_input))
+        return bool(
+            re.match(ipv4_pattern, self.original_input) or
+            re.match(hostname_pattern, self.original_input)
+        )
 
     # Checks if a single port is open, attempts banner grabbing, and prints port info
     def check_port(self, port):
         probe, use_ssl = PROTOCOL_PROBES.get(port, (None, False))
         try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.settimeout(float(settings.get("timeout_scanner", 0.5)))
+            result = s.connect_ex((self.target, port))
+
+            if result != 0:
+                s.close()
+                return  # Port is closed
+
+            output = f"{Fore.GREEN}[OPEN] Port: {port}{Style.RESET_ALL}\n"
+
             if use_ssl:
                 context = ssl.create_default_context()
-                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                s.settimeout(float(settings.get("timeout_scanner", 0.5)))
-                s = context.wrap_socket(s, server_hostname=self.target)
-                result = s.connect_ex((self.target, port))
+                try:
+                    s = context.wrap_socket(s, server_hostname=self.original_input)
+                except Exception as e:
+                    output += f"{Fore.RED}  ├─ SSL handshake failed: {e}{Style.RESET_ALL}\n"
+
+                    info = port_info(port)
+                    if info:
+                        output += f"{Fore.CYAN}"
+                        for line in info.splitlines():
+                            output += f"  ├─ {line}\n"
+                        output += f"{Style.RESET_ALL}"
+                    else:
+                        output += f"{Fore.LIGHTBLACK_EX}  └─ Info: No known description in portlist{Style.RESET_ALL}\n"
+
+                    print(output, log=True)
+                    s.close()
+                    return
+
+
+
+            # Attempt banner grabbing if probe defined
+            banner = ""
+            if probe:
+                try:
+                    s.sendall(probe)
+                    banner = s.recv(1024).decode(errors="ignore").strip()
+                except Exception as e:
+                    banner = f"{Fore.RED}[!] Error receiving banner: {e}{Style.RESET_ALL}"
             else:
-                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                s.settimeout(float(settings.get("timeout_scanner", 0.5)))
-                result = s.connect_ex((self.target, port))
+                banner = f"{Fore.YELLOW}[!] No probe sent; banner unlikely for this protocol.{Style.RESET_ALL}"
 
-            if result == 0:
-                output = f"{Fore.GREEN}[OPEN] Port: {port}{Style.RESET_ALL}\n"
+            output += f"{Fore.MAGENTA}  ├─ Banner: {banner}{Style.RESET_ALL}\n"
 
-                banner = ""
-                if probe:
-                    try:
-                        s.sendall(probe)
-                        banner = s.recv(1024).decode(errors="ignore").strip()
-                    except Exception as e:
-                        banner = f"{Fore.RED}[!] Error receiving banner: {e}{Style.RESET_ALL}"
-                else:
-                    banner = f"{Fore.YELLOW}[!] No probe sent; banner unlikely for this protocol.{Style.RESET_ALL}"
+            info = port_info(port)
+            if info:
+                output += f"{Fore.CYAN}"
+                for line in info.splitlines():
+                    output += f"  ├─ {line}\n"
+                output += f"{Style.RESET_ALL}"
+            else:
+                output += f"{Fore.LIGHTBLACK_EX}  └─ Info: No known description in portlist{Style.RESET_ALL}\n"
 
-                output += f"{Fore.MAGENTA}  ├─ Banner: {banner}{Style.RESET_ALL}\n"
-
-                info = port_info(port)
-                if info:
-                    output += f"{Fore.CYAN}"
-                    for line in info.splitlines():
-                        output += f"  ├─ {line}\n"
-                    output += f"{Style.RESET_ALL}"
-                else:
-                    output += f"{Fore.LIGHTBLACK_EX}  └─ Info: No known description in portlist{Style.RESET_ALL}\n"
-
-                print(output, log=True)
-
+            print(output, log=True)
             s.close()
-        except Exception:
-            print(f"{Fore.RED}[!] Banner grab failed or timed out on port {port}.{Style.RESET_ALL}", log=True)
+
+        except Exception as e:
+            print(f"{Fore.RED}[!] Unexpected error on port {port}: {e}{Style.RESET_ALL}", log=True)
+
 
     # Prompts user for target IP/hostname and initiates full port scan using threading
-    def scan_port(self):
+    def scan_port(self, user_input):
         while True:
-            user_input = input("Enter target IP address or its domain: ")
-            if not self.is_valid_input(user_input):
+            self.original_input = user_input
+            if not self.is_valid_input():
                 print(f"{Fore.YELLOW}[?] Invalid input. Please enter a valid IPv4 address or hostname.{Style.RESET_ALL}")
                 continue
             try:
-                self.target = socket.gethostbyname(user_input)
+                self.target = socket.gethostbyname(self.original_input)
                 print(f"Your target is: {self.target}", log=True)
                 break
             except socket.gaierror:
@@ -161,6 +178,6 @@ try:
     if __name__ == "__main__":
         print(f"{Fore.BLUE}{'-' * 50}{Style.RESET_ALL}", log=True)
         print(f"{Style.RESET_ALL}", log=True)
-        scan.scan_port()
+        scan.scan_port(user_input=input("Enter IP or Domain of the target: "))
 except KeyboardInterrupt:
     print(f"{Fore.YELLOW}[x] Interrupted by user. Shutting down...{Style.RESET_ALL}", log=True)

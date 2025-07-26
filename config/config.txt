@@ -1,7 +1,7 @@
 #Its hightly recommended to think twice before editing this file, wrong configurations will result
 #to problems with hardware properly running the program.
 
-#This will determine if the INSPECTOR will log results by default its True you may change it to False if you want to 
+#This will determine if the INSPECTOR will log results by default its True you may change it to False if you want to. 
 #!its case sensitive
 logging_enabled=True
 #Scanner configuration
