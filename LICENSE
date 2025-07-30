@@ -328,50 +328,61 @@ documented (and with an implementation available to the public in
 source code form), and must require no special password or key for
 unpacking, reading or copying.
 
-  7. Additional Terms.
+7. Additional Terms.
 
-  "Additional permissions" are terms that supplement the terms of this
+"Additional permissions" are terms that supplement the terms of this
 License by making exceptions from one or more of its conditions.
 Additional permissions that are applicable to the entire Program shall
 be treated as though they were included in this License, to the extent
-that they are valid under applicable law.  If additional permissions
+that they are valid under applicable law. If additional permissions
 apply only to part of the Program, that part may be used separately
 under those permissions, but the entire Program remains governed by
 this License without regard to the additional permissions.
 
-  When you convey a copy of a covered work, you may at your option
+When you convey a copy of a covered work, you may at your option
 remove any additional permissions from that copy, or from any part of
-it.  (Additional permissions may be written to require their own
-removal in certain cases when you modify the work.)  You may place
+it. (Additional permissions may be written to require their own
+removal in certain cases when you modify the work.) You may place
 additional permissions on material, added by you to a covered work,
 for which you have or can give appropriate copyright permission.
 
-  Notwithstanding any other provision of this License, for material you
+Notwithstanding any other provision of this License, for material you
 add to a covered work, you may (if authorized by the copyright holders of
 that material) supplement the terms of this License with terms:
 
-    a) Disclaiming warranty or limiting liability differently from the
-    terms of sections 15 and 16 of this License; or
+  a) Disclaiming warranty or limiting liability differently from the
+  terms of sections 15 and 16 of this License; or
 
-    b) Requiring preservation of specified reasonable legal notices or
-    author attributions in that material or in the Appropriate Legal
-    Notices displayed by works containing it; or
+  b) Requiring preservation of specified reasonable legal notices or
+  author attributions in that material or in the Appropriate Legal
+  Notices displayed by works containing it; or
 
-    c) Prohibiting misrepresentation of the origin of that material, or
-    requiring that modified versions of such material be marked in
-    reasonable ways as different from the original version; or
+  c) Prohibiting misrepresentation of the origin of that material, or
+  requiring that modified versions of such material be marked in
+  reasonable ways as different from the original version; or
 
-    d) Limiting the use for publicity purposes of names of licensors or
-    authors of the material; or
+  d) Limiting the use for publicity purposes of names of licensors or
+  authors of the material; or
 
-    e) Declining to grant rights under trademark law for use of some
-    trade names, trademarks, or service marks; or
+  e) Declining to grant rights under trademark law for use of some
+  trade names, trademarks, or service marks; or
 
-    f) Requiring indemnification of licensors and authors of that
-    material by anyone who conveys the material (or modified versions of
-    it) with contractual assumptions of liability to the recipient, for
-    any liability that these contractual assumptions directly impose on
-    those licensors and authors.
+  f) Requiring indemnification of licensors and authors of that
+  material by anyone who conveys the material (or modified versions of
+  it) with contractual assumptions of liability to the recipient, for
+  any liability that these contractual assumptions directly impose on
+  those licensors and authors.
+
+  **g) The following additional terms apply to this program:**
+
+  - You must preserve the name **Aegis Martin** as the original author in all public forks, derivative works, and redistributions of this program.
+
+  - You are strictly prohibited from removing or altering copyright notices or claiming authorship of the original code.
+
+  - Any modified versions of this program **must clearly state** that they are not the official *Inspector* tool developed by Aegis Martin.
+
+  - Misrepresentation of origin is considered a violation of this license, and will terminate your rights under it as per Section 8.
+
 
   All other non-permissive additional terms are considered "further
 restrictions" within the meaning of section 10.  If the Program as you

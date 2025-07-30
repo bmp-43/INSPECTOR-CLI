@@ -1,0 +1,4 @@
+recursive-include inspector_cli *.py
+recursive-include inspector_cli/tools/* *.py *.txt
+recursive-include inspector_cli/config *.txt
+include README.md

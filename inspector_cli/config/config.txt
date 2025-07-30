@@ -1,0 +1,29 @@
+#Its hightly recommended to think twice before editing this file, wrong configurations will result
+#to problems with hardware properly running the program.
+
+#This will determine if the INSPECTOR will log results by default its True you may change it to False if you want to. 
+#!its case sensitive
+logging_enabled=False
+#Scanner configuration
+timeout_scanner=1
+max_threads=1000
+start_port=1
+end_port=65535
+
+#Enumerator configuration
+semaphore=10
+timeout_enumerator=3
+#Be carefull with batch size!
+batch_size=1000 
+#Available subdomain lists are top_500.txt, top_5000.txt, top_20000.txt, top_110000.txt Thanks SecLists
+subdomain_wordlist=top_500.txt
+#Available path lists are common_4746.txt, small_list_87664, medium_list_220559.txt, big_list_1273832.txt  Thanks SecLists
+paths_wordlist=common_4746.txt
+#You can easily add your own lists depending on your goals
+
+toolchain_checksum=2aefdde965fc1f15248dcb3850015a1184c909f580b3b5e30dba91ed541c67ae
+
+
+#To be able to use malware analyser you need to register on virustotal and enter your api key here.
+VT_api_key=Your_API_key
+

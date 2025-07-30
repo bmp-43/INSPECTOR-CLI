@@ -2,6 +2,40 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0] - 2025-07-30
+
+### 🎉 Major Release: Inspector CLI is now pip-installable
+
+Inspector CLI v1.0.0 marks its first stable release — fully refactored, pip-distributable, and ready for real-world use.
+
+### 🧱 Added
+
+- `setup.py` for pip installation and global CLI access (`inspector`)
+- Automatic first-run config generation to `~/.config/inspector-cli/config.txt`
+- Auto-patching system: missing config keys are restored during runtime
+- Clean entry point (`__main__.py`) for `python -m inspector_cli`
+
+### 🔄 Changed
+
+- All tools now receive a centralized `settings` dictionary instead of loading config independently
+- Removed duplicated `config()` logic from every tool
+- Updated all file access to be relative and safe across platforms
+
+### 🧼 Fixed
+
+- ThreadPoolExecutor Ctrl+C crashes in `scanner`
+- asyncio `CancelledError` and pending task spam in `enumerator`
+- Cleaned up exception handling for all tools (user-friendly shutdown)
+- Fully suppressed Python 3.13's atexit and shutdown traceback noise
+
+### 📦 Packaging Notes
+
+- Package name: `inspector-cli`
+- CLI command: `inspector`
+- Python: `>=3.8` (tested on 3.13)
+
+
+
 ## \[0.5.1 BETA] - 2025-07-26
 
 ### Added

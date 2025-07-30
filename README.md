@@ -4,7 +4,7 @@ Inspector is a beginner-friendly cybersecurity toolkit designed to make common s
 
 ## Version
 
-**Current version:** 0.5.1 BETA
+**Current version:** 1.0.0
 
 ## Features
 
@@ -46,14 +46,13 @@ Inspector is a beginner-friendly cybersecurity toolkit designed to make common s
 
 ## How to Use
 
-1. Clone the repo:
+1. Install the package using pip (You have pip installed right?):
 
    ```bash
-   git clone https://github.com/bmp-43/Inspector.git
-   cd Inspector
+      pip install inspector-cli
    ```
 
-2. Make sure `config.txt` exists with values like:
+2. After first run config file will be created at `~/.config/inspector-cli/config.txt`with values like:
 
    ```
    logging_enabled=True
@@ -63,12 +62,12 @@ Inspector is a beginner-friendly cybersecurity toolkit designed to make common s
    end_port=100
    ```
 
-3. If you will use the Malware Analyser, set up your VirusTotal API key as instructed in the tool's documentation or config.
+3. If you will use the Malware Analyser, set up your VirusTotal API key (If you dont have one register VirusTotal acc) in the tool's config.
 
 4. Run the toolkit:
 
    ```bash
-   python3 inspector.py
+   inspector
    ```
 
    * Select the tool you want to use (Port Scanner, Recon & OSINT, Full Recon Scan, or Malware Analyser).
@@ -84,7 +83,6 @@ Inspector is a beginner-friendly cybersecurity toolkit designed to make common s
    * For Full Recon Scan, enter a domain and let Inspector automatically perform scanning and recon in one chain.
 
    > **Note:** All exception and status messages now use consistent prefixes and color coding for clarity.
-   > If you see threading-related warnings or tracebacks when exiting, this is a known Python 3.13 issue and does not affect Inspector's functionality.
    > **Scan logs are saved by default.** You can disable this in `config.txt`.
    > **Tool chaining and logging behavior were improved in 0.5.1 BETA.** See the `CHANGELOG.md` for more info.
 
@@ -97,7 +95,7 @@ The project folder structure was reorganized in 0.2.0 ALPHA for better modularit
 * Plugin support (custom tools via `plugins/` folder)
 * General UX improvements
 * CLI flags for silent/full recon modes
-* Modular refactoring for better pip packaging
+* New tools and upgrade old ones
 
 ## License
 
@@ -105,6 +103,6 @@ This project is licensed under the GNU General Public License v3.0.
 You’re free to use, study, share, and modify the code.
 You must also share your changes under the same license.
 No one can legally steal or privatize your code.
-Commercial use is allowed only if they also keep it open-source.
+Commercial use is allowed only if they also keep it open-source and name of the original developer.
 
 Read more: [https://www.gnu.org/licenses/gpl](https://www.gnu.org/licenses/gpl)

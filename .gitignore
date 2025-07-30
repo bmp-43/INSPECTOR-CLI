@@ -2,6 +2,8 @@
 __pycache__/
 *.py[cod]
 *.pyo
+**/__pycache__/
+
 
 # Virtual environments
 venv/
@@ -32,6 +34,8 @@ Thumbs.db
 *.egg-info/
 dist/
 build/
+*.egg-info
+
 
 # Jupyter Notebooks checkpoints
 .ipynb_checkpoints/
