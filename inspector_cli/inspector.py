@@ -105,7 +105,7 @@ def main_launching():
     global start
     start = True
 
-version = "Version 1.1.0"
+version = "Version 1.1.1"
 
 def greating():
     global separators
@@ -294,12 +294,17 @@ def weapon():
     else:
         print(f"{Fore.YELLOW}[?] Invalid option selected.{Style.RESET_ALL}")
 
-try:
-    load_settings()
-    while True:
-        weapon()
-        sleep(2)
-        
-except KeyboardInterrupt:
-    print(f"{Fore.YELLOW}[x] Interrupted by user. Shutting down...{Style.RESET_ALL}")
-    sys.exit()
+
+def launch():
+    try:
+        load_settings()
+        while True:
+            weapon()
+            sleep(1)
+            
+    except KeyboardInterrupt:
+        print(f"{Fore.YELLOW}[x] Interrupted by user. Shutting down...{Style.RESET_ALL}")
+        sys.exit()
+
+if __name__ == "__main__":
+    launch()

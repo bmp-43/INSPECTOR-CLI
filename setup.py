@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='inspector-cli',
-    version='1.1.0',
+    version='1.1.1',
     author='Aegis Martin',
     description='A modular cybersecurity CLI tool for scanning, recon, and malware analysis.',
     long_description=open('README.md', encoding='utf-8').read(),
@@ -21,7 +21,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'inspector = inspector_cli.inspector:weapon'  # check this matches your function name
+            'inspector = inspector_cli.inspector:launch'  # check this matches your function name
         ],
     },
     classifiers=[

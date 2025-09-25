@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.1 and 1.1.2] - 2025-09-25
+
+### Fixed
+- Reworked CLI entry point: moved loop logic into `main()`.
+- Console script `inspector` now correctly launches without side-effects.
+- Overall bug fixes
+
+
+
 ## [1.1.0] - 2025-09-25
 
 ### ✨ Added

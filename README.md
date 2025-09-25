@@ -6,7 +6,7 @@ Inspector is a beginner-friendly cybersecurity toolkit designed to make common s
 
 ## Version
 
-**Current version:** `1.1.0`
+**Current version:** `1.1.2`
 
 ---
 
