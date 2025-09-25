@@ -105,7 +105,7 @@ def main_launching():
     global start
     start = True
 
-version = "Version 1.0.0"
+version = "Version 1.1.0"
 
 def greating():
     global separators
