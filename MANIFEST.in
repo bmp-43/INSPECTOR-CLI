@@ -1,4 +1,14 @@
-recursive-include inspector_cli *.py
-recursive-include inspector_cli/tools/* *.py *.txt
-recursive-include inspector_cli/config *.txt
+# Include docs and meta
 include README.md
+include CHANGELOG.md
+include LICENSE
+
+# Include config defaults, JSONs, etc.
+recursive-include inspector_cli *.txt *.json
+
+# Include wordlists or data files
+recursive-include inspector_cli/tools/scanner *.txt
+recursive-include inspector_cli/tools/enumerator *.txt
+
+# Exclude cache and junk
+global-exclude *.pyc __pycache__ *.pyo *.pyd *.swp

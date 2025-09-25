@@ -387,26 +387,26 @@ def check_vt_key_valid(api_key):
 # Main entry point for choosing hash, URL, or file analysis from user input
 def main(settings):
     try:
-        if not check_vt_key_valid(api_key=settings.get("VT_api_key", None)):
-            print(f"{Fore.RED}[!] Invalid VirusTotal API key. Please check config.txt{Style.RESET_ALL}", log=True)
+        if not check_vt_key_valid(api_key=settings["malware_analyser"]["vt_api_key"]):
+            print(f"{Fore.RED}[!] Invalid VirusTotal API key. Please check your settings{Style.RESET_ALL}", log=True)
             sys.exit()
-    except Exception:
-        print(f"{Fore.RED}[!] Unexpected error occurred.{Style.RESET_ALL}", log=True)
+    except Exception as e:
+        print(f"{Fore.RED}[!] Unexpected error occurred. - {e}{Style.RESET_ALL}", log=True)
 
 
     try:
         mode = input("Pick What are you gonna Analyse: \n 1. Hash \n 2. URL \n 3. File \n")
         if mode == "1" or mode.lower() == "hash":
-            hash_instance = HashScanner(api_key=settings.get("VT_api_key", None), h_value=input("Provide hash for scanning: ").strip())
+            hash_instance = HashScanner(api_key=settings["malware_analyser"]["vt_api_key"], h_value=input("Provide hash for scanning: ").strip())
             hash_instance.start()
         elif mode == "2" or mode.lower() == "url":
-            url_instance = UrlAnalyser(api_key=settings.get("VT_api_key", None), url=input("Provide URL for scanning: ").strip())
+            url_instance = UrlAnalyser(api_key=settings["malware_analyser"]["vt_api_key"], url=input("Provide URL for scanning: ").strip())
             url_instance.vt_url_lookup()
         elif mode == "3" or mode.lower() == "file":
-            file_instance = FileAnalyser(api_key=settings.get("VT_api_key", None), file_path=input("Enter path to file: ").strip())
+            file_instance = FileAnalyser(api_key=settings["malware_analyser"]["vt_api_key"], file_path=input("Enter path to file: ").strip())
             file_instance.vt_file_scan()
 
     except KeyboardInterrupt:
         print(f"{Fore.YELLOW}[x] Interrupted by user. Shutting down...{Style.RESET_ALL}", log=True)
-    except Exception:
-        print(f"{Fore.RED}[!] Unexpected error occurred.{Style.RESET_ALL}", log=True)
+    except Exception as e:
+        print(f"{Fore.RED}[!] Unexpected error occurred. - {e}{Style.RESET_ALL}", log=True)

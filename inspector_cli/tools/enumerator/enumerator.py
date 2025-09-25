@@ -38,14 +38,14 @@ class Subdomain_enumerator:
         self.dns_failures = dns_failures
 
     async def check_wildcards(self, session):
-        limit = asyncio.Semaphore(float(self.settings.get("semaphore", 10))) 
+        limit = asyncio.Semaphore(self.settings["enumerator"]["semaphore"])
         wildcards = ["dGhpc3Nob3VsZG5vdGV4aXN0", "d2h5d291bGR5eW91ZGVjb2RldGhpcw==", "SmVzdXNsb3Zlc3lvdQ=="] 
         async with limit:
             try:
                 false_positives = 0
                 for wildcard in wildcards:
                     url = f"https://{wildcard}.{self.url}"
-                    async with session.get(url, timeout=float(self.settings.get("timeout_enumerator", 5))) as resp:
+                    async with session.get(url, timeout=float(self.settings["enumerator"]["timeout"])) as resp:
                         status = resp.status
                         if status != 404:
                             false_positives += 1
@@ -60,11 +60,11 @@ class Subdomain_enumerator:
             except aiohttp.client_exceptions.ClientConnectionError:
                 pass
             except TimeoutError:
-                print(f"{Fore.CYAN}[i] Did you mess with config file?{Style.RESET_ALL}")
+                print(f"{Fore.CYAN}[i] Did you mess with settings file?{Style.RESET_ALL}")
 
     async def fetch(self, url, session):
         try:
-            async with session.get(url, timeout=float(self.settings.get("timeout_enumerator", 5))) as resp:
+            async with session.get(url, timeout=float(self.settings["enumerator"]["timeout"])) as resp:
                 status = resp.status
 
                 if status == 200:
@@ -95,14 +95,14 @@ class Subdomain_enumerator:
             print(f"{Fore.RED}[!] Subdomain Enumerator Error: {e}{Style.RESET_ALL}")
             self.dns_failures += 1
         except TimeoutError:
-            print(f"{Fore.CYAN}[i] Did you mess with config file?{Style.RESET_ALL}")
+            print(f"{Fore.CYAN}[i] Did you mess with settings file?{Style.RESET_ALL}")
         except ConnectionResetError:
             print(f"{Fore.YELLOW}[x] Connection reset by peer{Style.RESET_ALL}")
 
     async def main(self):
-        wordlist_path = "subdomains/" + str(self.settings.get('subdomain_wordlist'))
+        wordlist_path = "subdomains/" + self.settings["enumerator"]["subdomain_wordlist"]
         if not wordlist_path:
-            print(f"{Fore.RED}[!] No wordlist path set in config!{Style.RESET_ALL}")
+            print(f"{Fore.RED}[!] No wordlist path set in settings!{Style.RESET_ALL}")
             return
         if not os.path.isabs(wordlist_path):
             wordlist_path = os.path.join(enumerator_dir, wordlist_path)
@@ -116,7 +116,7 @@ class Subdomain_enumerator:
             try:
                 await self.check_wildcards(session)
                 batch = []
-                batch_size = int(self.settings.get("batch", 1000))
+                batch_size = int(self.settings["enumerator"]["batch_size"])
                 with open(wordlist_path, "r") as f:
                     for line in f:
                         subdomain = line.strip()
@@ -160,11 +160,10 @@ class Path_enumerator:
     async def fetch(self, url, session):
         fake_path = "/c655f7fb29b00ed5021718ac7ee444b72e56e7547e3afc407c839f72f8f92f8e"
         try:
-            async with session.get(url + fake_path, timeout=float(self.settings.get("timeout_enumerator", 5))) as baseline_resp:
+            async with session.get(url + fake_path, timeout=float(self.settings["enumerator"]["timeout"])) as baseline_resp:
                 baseline_html = await baseline_resp.text()
-
-            async with session.get(url, timeout=float(self.settings.get("timeout_enumerator", 5))) as resp:
-                status = resp.status
+                async with session.get(url, timeout=float(self.settings["enumerator"]["timeout"])) as resp:
+                    status = resp.status
 
                 if status == 200:
                     if any(keyword in baseline_html.lower() for keyword in ["404", "not found", "does not exist"]):
@@ -197,14 +196,14 @@ class Path_enumerator:
             print(f"{Fore.RED}[!] Path Enumerator Error: {e}{Style.RESET_ALL}")
             self.dns_failures += 1
         except TimeoutError:
-            print(f"{Fore.CYAN}[i] Did you mess with config file?{Style.RESET_ALL}")
+            print(f"{Fore.CYAN}[i] Did you mess with settings file?{Style.RESET_ALL}")
         except ConnectionResetError:
             print(f"{Fore.YELLOW}[x] Connection reset by peer{Style.RESET_ALL}")
 
     async def main(self):
-        wordlist_path = "paths/" + str(self.settings.get('paths_wordlist'))
+        wordlist_path = "paths/" + self.settings["enumerator"]["paths_wordlist"]
         if not wordlist_path:
-            print(f"{Fore.RED}[!] No wordlist path set in config!{Style.RESET_ALL}")
+            print(f"{Fore.RED}[!] No wordlist path set in settings!{Style.RESET_ALL}")
             return
         if not os.path.isabs(wordlist_path):
             wordlist_path = os.path.join(enumerator_dir, wordlist_path)
@@ -217,7 +216,7 @@ class Path_enumerator:
         async with aiohttp.ClientSession(connector=connector) as session:
             try:
                 batch = []
-                batch_size = int(self.settings.get("batch", 1000))
+                batch_size = int(self.settings["enumerator"]["batch_size"])
                 with open(wordlist_path, "r") as f:
                     for line in f:
                         path = line.strip()
@@ -279,8 +278,8 @@ def run_with_handler(coro):
 
 def subdomain_enum(settings, domain_sub):
     print("-" * 50)
-    print(f"{Fore.CYAN}[i]{Style.RESET_ALL} Using subdomain wordlist from config: {settings.get('subdomain_wordlist')}")
-    print(f"{Fore.LIGHTBLACK_EX}Edit 'config.txt' to change the wordlist path.{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}[i]{Style.RESET_ALL} Using subdomain wordlist from settings: {settings['enumerator']['subdomain_wordlist']}")
+    print(f"{Fore.LIGHTBLACK_EX}Edit settings to change the wordlist path.{Style.RESET_ALL}")
     print("-" * 50)
     try:
         if domain_sub.startswith("http://"):
@@ -294,8 +293,8 @@ def subdomain_enum(settings, domain_sub):
 
 def directory_brute_force(settings, domain_brute):
     print("-" * 50)
-    print(f"{Fore.CYAN}[i]{Style.RESET_ALL} Using path wordlist from config: {settings.get('paths_wordlist')}")
-    print(f"{Fore.LIGHTBLACK_EX}Edit 'config.txt' to change the wordlist path.{Style.RESET_ALL}")
+    print(f"{Fore.CYAN}[i]{Style.RESET_ALL} Using path wordlist from settings: {settings['enumerator']['paths_wordlist']}")
+    print(f"{Fore.LIGHTBLACK_EX}Edit settings to change the wordlist path.{Style.RESET_ALL}")
     print("-" * 50)
     try:
         if domain_brute.startswith("http://"):

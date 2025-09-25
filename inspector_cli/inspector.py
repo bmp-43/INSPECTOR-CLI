@@ -8,6 +8,10 @@ from colorama import Fore, Style
 import sys
 import shutil
 from importlib.metadata import version, PackageNotFoundError
+import json
+import platform
+from time import sleep
+
 
 def print_version():
     try:
@@ -24,72 +28,78 @@ original_print = builtins.print
 output_file = None
 ansi_escape = re.compile(r'\x1B[@-_][0-?]*[ -/]*[@-~]')
 separators = f"{Fore.BLUE}-{Style.RESET_ALL}" * 100
+max_threads = os.cpu_count() * 75
 
-base_dir = os.path.dirname(os.path.abspath(__file__))
 
-# Setup default and user config paths
-def get_user_config_path():
-    user_config = os.path.expanduser("~/.config/inspector-cli/config.txt")
-    default_config = os.path.join(base_dir, "config", "config.txt")
+DEFAULT_SETTINGS = {
+    "logging_enabled": True,
+    "scanner": {
+        "timeout": 0.7,
+        "max_threads": max_threads,
+        "start_port": 1,
+        "end_port": 1023
+    },
+    "enumerator": {
+        "semaphore": 10,
+        "timeout": 3,
+        "batch_size": 1000,
+        "subdomain_wordlist": "top_500.txt",
+        "paths_wordlist": "common_4746.txt"
+    },
+    "malware_analyser": {
+        "vt_api_key": "Your_API_Key"
+    }
+}
 
-    # Copy default if user config doesn't exist
-    if not os.path.isfile(user_config):
-        os.makedirs(os.path.dirname(user_config), exist_ok=True)
-        shutil.copy(default_config, user_config)
-        print(f"{Fore.YELLOW}[i] Default config copied to: {user_config}{Style.RESET_ALL}")
+def user_settings():
+    if platform.system() == "Windows":
+        base_dir = os.getenv("APPDATA", os.path.expanduser("~/.config"))
     else:
-        # Check for missing keys and auto-patch
-        with open(default_config, "r") as f:
-            default_lines = [line.strip() for line in f if "=" in line]
-            default_keys = {line.split("=", 1)[0] for line in default_lines}
+        base_dir = os.getenv("XDG_CONFIG_HOME", os.path.expanduser("~/.config"))
 
-        with open(user_config, "r") as f:
-            user_lines = [line.strip() for line in f if "=" in line]
-            user_keys = {line.split("=", 1)[0] for line in user_lines}
-
-        missing_keys = default_keys - user_keys
-
-        if missing_keys:
-            print(f"{Fore.CYAN}[i] Updating config with missing keys: {', '.join(missing_keys)}{Style.RESET_ALL}")
-            with open(default_config, "r") as f:
-                default_config_dict = {
-                    line.split("=", 1)[0]: line for line in f if "=" in line
-                }
-
-            with open(user_config, "a") as f:
-                for key in missing_keys:
-                    f.write(default_config_dict[key] + "\n")
-
-    return user_config
+    return os.path.join(base_dir, "inspector-cli", "settings.json")
 
 
-# Load config from user directory
-final_config_path = get_user_config_path()
 
-def config(filename):
-    config = {}
-    with open(filename, "r") as f:
-        for line in f:
-            if "=" in line:
-                key, value = line.strip().split("=", 1)
-                config[key] = value
-    return config
 
-settings = config(final_config_path)
+def load_settings():
+    path = user_settings()
 
-logging_state = str(settings.get("logging_enabled", "True"))
+    # If settings.json doesn’t exist → create with defaults
+    if not os.path.isfile(path):
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w") as f:
+            json.dump(DEFAULT_SETTINGS, f, indent=2)
+        print(f"{Fore.YELLOW}[i] Default settings created at {path}{Style.RESET_ALL}")
+        return DEFAULT_SETTINGS.copy()
+
+    # If it exists → try loading
+    try:
+        with open(path, "r") as f:
+            return json.load(f)
+    except Exception:
+        print(f"{Fore.RED}[!] Error reading settings.json. Resetting to defaults.{Style.RESET_ALL}")
+        return DEFAULT_SETTINGS.copy()
+
+
+
+
+settings = load_settings()
+
+logging_state = settings["logging_enabled"]
 
 
 
 # Prepare the tools, scanner instance and threading warning
 start = False
 def main_launching():
-    global scanner, enumerator, analyser, profiler
+    global scanner, enumerator, analyser, profiler, guide_settings
 # cli.py
-    from inspector_cli.tools.scanner import scanner
-    from inspector_cli.tools.enumerator import enumerator
-    from inspector_cli.tools.analyser import analyser
-    from inspector_cli.tools.profiler import profiler
+    from tools.scanner import scanner
+    from tools.enumerator import enumerator
+    from tools.analyser import analyser
+    from tools.profiler import profiler
+    from config import guide_settings
     global scanner_instance
     scanner_instance = scanner.PortScanner(settings)
     global start
@@ -133,7 +143,7 @@ def custom_print_false(*args, **kwargs):
     kwargs.pop("log", None)
     original_print(*args, **kwargs)
 
-if logging_state == "True":
+if logging_state:
     builtins.print = custom_print_true
 else:
     builtins.print = custom_print_false
@@ -144,11 +154,11 @@ def weapon():
         main_launching()
 
     print(separators)
-    mode = input(f"{Style.RESET_ALL}Pick the tool you wanna use: \n 1. Port Scanner\n 2. Recon & OSINT\n 3. Full Reconnaissance Scan \n 4. Malware Analyser \n ")
+    mode = input(f"{Style.RESET_ALL}Pick the tool you wanna use: \n 1. Port Scanner\n 2. Recon & OSINT\n 3. Full Reconnaissance Scan \n 4. Malware Analyser \n 5. Guide & Settings \n")
     print(separators)
 
     if mode == "1" or mode.lower() == "port scanner":
-        if logging_state == "True":
+        if logging_state:
             log_creation()
         try:
             scanner_instance.scan_port(user_input=input("Enter IP or Domain of the target: "))
@@ -159,7 +169,7 @@ def weapon():
             print(f"{Fore.RED}[!] Port Scanner Error: {e}{Style.RESET_ALL}")
 
     elif mode == "2" or mode.lower() == "recon & osint":
-        if logging_state == "True":
+        if logging_state:
             log_creation()
         try:
             print(separators)
@@ -168,20 +178,20 @@ def weapon():
 
             if osint_tool == "1" or osint_tool.lower() == "subdomain enumerator":
                 try:
-                    enumerator.subdomain_enum(settings, domain_sub=input("Enter the root domain (e.g google.com): ").strip().lower())
+                    enumerator.subdomain_enum(settings=settings, domain_sub=input("Enter the root domain (e.g google.com): ").strip().lower())
                 except Exception as e:
                     print(f"{Fore.RED}[!] Subdomain Enumerator Error: {e}{Style.RESET_ALL}")
 
             elif osint_tool == "2" or osint_tool.lower() == "directory brute-forcer":
                 try:
-                    enumerator.directory_brute_force(settings, domain_brute=input("Enter the root domain (e.g google.com): ").strip().lower())
+                    enumerator.directory_brute_force(settings=settings, domain_brute=input("Enter the root domain (e.g google.com): ").strip().lower())
                 except Exception as e:
                     print(f"{Fore.RED}[!] Path Enumerator Error: {e}{Style.RESET_ALL}")
 
             elif osint_tool == "3" or osint_tool.lower() == "dns profiler":
                 try:
                     print(separators)
-                    initializator_profiler = profiler.Profiler(settings, domain=input("Enter domain name: "))
+                    initializator_profiler = profiler.Profiler(settings=settings, domain=input("Enter domain name: "))
                     initializator_profiler.domain_lookup()
                     initializator_profiler.dns_records_fetching()
                     initializator_profiler.ip_lookup()
@@ -198,10 +208,10 @@ def weapon():
 
 
     elif mode == "3" or mode.lower() == "full reconnaissance scan":
-        if logging_state == "True":
+        if logging_state:
             log_creation()
         print(separators)
-        print(f"{Fore.MAGENTA}This mode will perform full reconnaissance scan on the ip or domain, \nso it will take some time depending on your settings from config.txt{Style.RESET_ALL}")
+        print(f"{Fore.MAGENTA}This mode will perform full reconnaissance scan on the ip or domain, \nso it will take some time depending on your settings from settings.json{Style.RESET_ALL}")
         proceed = input("Do you want to proceed? (y/n): ")
         if proceed == "y":
             full_scan_ip = input("Enter IP or Domain of the target: ")
@@ -228,24 +238,68 @@ def weapon():
 
 
     elif mode == "4" or mode.lower() == "malware analyser":
-        if logging_state == "True":
+        if logging_state:
             log_creation()
         try:
-            print(f"{Fore.CYAN}[i]{Style.RESET_ALL} {Fore.LIGHTBLACK_EX}Note that Malware analyser uses VirusTotal API. Check the config.txt{Style.RESET_ALL}")
+            print(f"{Fore.CYAN}[i]{Style.RESET_ALL} {Fore.LIGHTBLACK_EX}Note that Malware analyser uses VirusTotal API. Check the settings.json{Style.RESET_ALL}")
             print(separators)
-            analyser.main(settings)
+            try:
+                if not analyser.check_vt_key_valid(api_key=settings["malware_analyser"]["vt_api_key"]):
+                    print(f"{Fore.RED}[!] Invalid VirusTotal API key. Please check your settings{Style.RESET_ALL}", log=True)
+                    sys.exit()
+            except Exception as e:
+                print(f"{Fore.RED}[!] Unexpected error occurred. - {e}{Style.RESET_ALL}", log=True)
+
+
+            try:
+                mode = input("Pick What are you gonna Analyse: \n 1. Hash \n 2. URL \n 3. File \n")
+                if mode == "1" or mode.lower() == "hash":
+                    hash_instance = analyser.HashScanner(settings=settings, api_key=settings["malware_analyser"]["vt_api_key"], h_value=input("Provide hash for scanning: ").strip())
+                    hash_instance.start()
+                elif mode == "2" or mode.lower() == "url":
+                    url_instance = analyser.UrlAnalyser(settings=settings, api_key=settings["malware_analyser"]["vt_api_key"], url=input("Provide URL for scanning: ").strip())
+                    url_instance.vt_url_lookup()
+                elif mode == "3" or mode.lower() == "file":
+                    file_instance = analyser.FileAnalyser(settings=settings, api_key=settings["malware_analyser"]["vt_api_key"], file_path=input("Enter path to file: ").strip())
+                    file_instance.vt_file_scan()
+
+            except KeyboardInterrupt:
+                print(f"{Fore.YELLOW}[x] Interrupted by user. Shutting down...{Style.RESET_ALL}", log=True)
+            except Exception as e:
+                print(f"{Fore.RED}[!] Unexpected error occurred. - {e}{Style.RESET_ALL}", log=True)
+
         except KeyboardInterrupt:
             print(f"{Fore.YELLOW}[x] Interrupted by user. Shutting down...{Style.RESET_ALL}") 
         except Exception as e:
             print(f"{Fore.RED}[!] Malware Analyser Error: {e}{Style.RESET_ALL}")
+    
+    elif mode == "5" or mode.lower() == "guide" or mode.lower() == "settings":
+        print(f"{Fore.BLUE}Would you like to view the Inspector-CLI guide or edit the settings file?{Style.RESET_ALL}")
+        guide_init = guide_settings.Guide()
+        settings_init = guide_settings.Edit_Settings(settings=load_settings())
+        option = input("Enter 1. Guide 2. View Current Settings 3. Edit Settings\n")
+        if option == "1" or option.lower() == "guide":
+            guide_init.port_scanner()
+            guide_init.recon()
+            guide_init.malware_analyser()
+            guide_init.full_recon()
+        elif option == "2" or option.lower() == "view current settings":
+            settings_init.current_settings()
+        elif option == "3" or option.lower() == "edit settings":
+            settings_init.edit()
+            
+
+
+
     else:
         print(f"{Fore.YELLOW}[?] Invalid option selected.{Style.RESET_ALL}")
 
-
-
 try:
+    load_settings()
     while True:
         weapon()
+        sleep(2)
+        
 except KeyboardInterrupt:
     print(f"{Fore.YELLOW}[x] Interrupted by user. Shutting down...{Style.RESET_ALL}")
     sys.exit()

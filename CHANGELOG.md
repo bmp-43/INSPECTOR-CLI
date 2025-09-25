@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0] - 2025-09-25
+
+### ✨ Added
+- **Interactive Settings Editor:** Users can now edit configuration directly from the CLI.  
+- **Built-in Guide:** Added a step-by-step usage guide accessible from the main menu.  
+
+### 🔄 Changed
+- **Config system overhaul:** Replaced legacy `config.txt` with `settings.json`.  
+  - Autocreated on first run.  
+  - Stored at:  
+    - **Unix/Linux:** `~/.config/inspector-cli/settings.json`  
+    - **Windows:** `%AppData%\Inspector-CLI\settings.json`  
+
+### 🗑️ Removed
+- Old `config.txt` support fully removed.
+
 ## [1.0.0] - 2025-07-30
 
 ### 🎉 Major Release: Inspector CLI is now pip-installable

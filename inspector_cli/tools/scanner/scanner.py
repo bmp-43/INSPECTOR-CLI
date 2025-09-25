@@ -57,7 +57,7 @@ class PortScanner:
     def __init__(self, settings, target=None):
         self.settings = settings
         self.target = target
-        self.max_threads = int(self.settings.get("max_threads", 100))
+        self.max_threads = int(self.settings["scanner"]["max_threads"])
         self.original_input = None
     # FIXED: Properly pass self.original_input to both re.match() calls
     def is_valid_input(self):
@@ -73,7 +73,7 @@ class PortScanner:
         probe, use_ssl = PROTOCOL_PROBES.get(port, (None, False))
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.settimeout(float(self.settings.get("timeout_scanner", 0.5)))
+            s.settimeout(float(self.settings["scanner"]["timeout"]))
             result = s.connect_ex((self.target, port))
 
             if result != 0:
@@ -146,12 +146,13 @@ class PortScanner:
                 break
             except socket.gaierror:
                 print(f"{Fore.YELLOW}[?] Invalid IP or hostname. Try again:{Style.RESET_ALL}")
-
+        
         try:
             with concurrent.futures.ThreadPoolExecutor(max_workers=self.max_threads) as executor:
-                future = executor.map(self.check_port, range(
-                    int(self.settings.get("start_port", 1)),
-                    int(self.settings.get("end_port", 65535))
+                future = executor.map(self.check_port,
+                range(
+                    int(self.settings["scanner"]["start_port"]),
+                    int(self.settings["scanner"]["end_port"])
                 ))
                 for _ in future:
                     pass  # ensures KeyboardInterrupt gets caught here

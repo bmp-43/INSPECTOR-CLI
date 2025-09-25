@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='inspector-cli',
-    version='1.0.0',
+    version='1.1.0',
     author='Aegis Martin',
     description='A modular cybersecurity CLI tool for scanning, recon, and malware analysis.',
     long_description=open('README.md').read(),
