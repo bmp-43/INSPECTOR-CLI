@@ -2,7 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.1.1 and 1.1.2] - 2025-09-25
+## [1.1.1 - 1.1.3] - 2026-01-25
+
+### Inspector-CLI is discontinued
+
+Inspector-CLI v1 suffered from several deep architectural flaws:
+
+- tightly coupled internal modules  
+- global state interacting unpredictably  
+- monkey-patched print/logging logic  
+- inconsistent configuration handling  
+- menu-based UX not suitable for scaling  
+- limited error handling  
+- poor testability  
+- design choices made before the project had a clear direction  
+
+Fixing these issues would require rewriting 70–80% of the codebase.  
+A clean rebuild is faster and safer.
+
+A replacement AegisCLI is on the way!
+
+
+## [1.1.1 - 1.1.3] - 2025-09-25
 
 ### Fixed
 - Reworked CLI entry point: moved loop logic into `main()`.
